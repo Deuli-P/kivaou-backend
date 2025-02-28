@@ -1,19 +1,10 @@
-import express from 'express';
-import path from 'path';
-import loginRouter from './routes/loginRouters';
-// import cors from 'cors';
-const app = express();
+import dotenv from 'dotenv';
+import app from './src/app.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config();
 
+const PORT = process.env.PORT || 3000;
 
-app.use(express.static(path.join(__dirname, "public")));
-
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-app.use(loginRouter)
-app.listen(3000, () => {
-    console.log('Server is running on port 3000');
+app.listen(PORT, () => {
+    console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
 });
