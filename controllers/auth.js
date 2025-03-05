@@ -8,8 +8,6 @@ export const postLogin = async (req, res) => {
 
     const { email , password } = req.body;
 
-    // ========= SECURITY =========
-
     if(email=== '' || password === ''){
         res.status(400).json({message: 'Veuillez remplir tous les champs'});
     }
@@ -23,14 +21,18 @@ export const postLogin = async (req, res) => {
         res.status(400).json({message: 'Mot de passe trop court'});
     }
 
-    // Vérifier si l'email existe
-    
-
-
 
 };
 
-export const getLogout = async (req, res) => {
-    req.session.destroy();
-    res.redirect('/login');
+export const getSession = async (req, res) => {
+    try{
+        
+
+
+
+    }
+    catch(e){
+        console.error(e);
+        res.status(500).json({message: 'Erreur serveur'});
+    }
 }
