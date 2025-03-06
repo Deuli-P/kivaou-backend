@@ -22,10 +22,10 @@ app.use(express.static(path.join(__dirname, "public")));
 
 
 app.use(cors({
-    origin: process.env.APP_HOST,
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+  origin: process.env.APP_HOST, 
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
 
@@ -48,8 +48,9 @@ app.use(session({
 
 // =================== ROUTES ===================
 
-app.get('/api/', (req, res) => {
-    res.send('Hello World');
+app.get('/api', (req, res) => {
+  console.log('ping')
+    res.json('Hello World');
 }
 );
 

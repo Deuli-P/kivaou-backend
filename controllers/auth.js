@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import executeQuery from '../utils/dbReader.js';
 import { regexEmail } from '../utils/utils.js';
-
+import path from 'path';
 // J'ai besoin : 
 // - d'envoyer la demande de connexion avec email et password et de renvoyer si correcte un token
 
@@ -28,7 +28,7 @@ export const postLogin = async (req, res) => {
             });
         }
 
-        const filePathCheckByEmail = path.join("queries/users/getAuthByEmail.sql");
+        const filePathCheckByEmail = path.join("queries/auth/getAuthByEmail.sql");
         const resultCheckEmail = await executeQuery(filePathCheckByEmail, [email]);
         if(resultCheckEmail.length === 0){
             res.status(400).json({
@@ -51,7 +51,7 @@ export const postLogin = async (req, res) => {
             });
         }
  
-        const filePathDataUser = path.join("queries/users/getUserById.sql");
+        const filePathDataUser = path.join("queries/auth/getUserById.sql");
         const userData = await executeQuery(filePathDataUser, [resultCheckEmail[0].id]);
         if(userData.length === 0){
             res.status(500).json({
@@ -104,7 +104,7 @@ export const getSession = async (req, res) => {
             res.status(401).json({message: 'Non connecté'});
         }
 
-        const filePathDataUser = path.join("queries/users/getUserById.sql");
+        const filePathDataUser = path.join("queries/auth/getUserById.sql");
         const userData = await executeQuery(filePathDataUser, [token.id]);
         if(userData.length === 0){
             res.status(500).json({
@@ -184,7 +184,7 @@ export const createUser = async (req, res) => {
         }
         
         //on vérifie si l'email est déjà utilisé
-        const filePathCheckByEmail = path.join("queries/users/getAuthByEmail.sql");
+        const filePathCheckByEmail = path.join("queries/auth/getAuthByEmail.sql");
         const resultCheckEmail = await executeQuery(filePathCheckByEmail, [email]);
         if(resultCheckEmail.length > 0){
             res.status(400).json({
@@ -197,8 +197,14 @@ export const createUser = async (req, res) => {
 
         const hash = await bcrypt.hash(password, 10);
 
-        const filePathCreateUser = path.join("queries/users/createUser.sql");
-        const resultCreateUser = await executeQuery(filePathCreateUser, [firstname, lastname, email, hash, photo_path]);
+        const filePathCreateUser = path.join("queries/auth/createUser.sql");
+        const resultCreateUser = await executeQuery(filePathCreateUser, [
+            email, 
+            firstname, 
+            lastname, 
+            hash,
+            photo_path
+        ]);
         if(resultCreateUser.affectedRows === 0){
             res.status(500).json({
                 status: 500,
