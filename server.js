@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import session from 'express-session';
 import PgSession from 'connect-pg-simple';
 import pool from './config/databases.js';
+import initTables from './migrations/initTables.js';
 
 
 const app = express();
@@ -32,6 +33,7 @@ app.use(session({
     store: new (PgSession(session))({
       pool,
       tableName: 'session',
+      createTableIfMissing: true
     }),
     secret: process.env.JWT_SECRET,
     resave: true,
@@ -58,9 +60,14 @@ app.use('/api/auth', authRouter)
 //app.use('/api/comment', commentRouter)
 
 
-
+ 
 
 // 
-app.listen(process.env.PORT, () => {
-    console.log('Server is running on port 3000');
+initTables().then(() => {
+  app.listen(process.env.PORT, () => {
+      console.log(`🚀 Serveur démarré sur le port ${process.env.PORT}`);
+  });
+}).catch(err => {
+  console.error("❌ Erreur lors des migrations :", err);
 });
+ 
