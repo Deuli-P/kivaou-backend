@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'path';
-import authRouter from './routes/loginRouters';
+import { fileURLToPath } from 'url';
+import authRouter from './routes/auth.js';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import session from 'express-session';
@@ -10,6 +11,7 @@ import pool from './config/databases.js';
 
 const app = express();
 dotenv.config();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 
 
@@ -44,11 +46,16 @@ app.use(session({
 
 // =================== ROUTES ===================
 
-app.use('/auth', authRouter)
-//app.use('/organisation', organisationRouter)
-//app.use('/user', userRouter)
-//app.use('/event', eventRouter)
-//app.use('/comment', commentRouter)
+app.get('/api/', (req, res) => {
+    res.send('Hello World');
+}
+);
+
+app.use('/api/auth', authRouter)
+//app.use('/api/organisation', organisationRouter)
+//app.use('/api/user', userRouter)
+//app.use('/api/event', eventRouter)
+//app.use('/api/comment', commentRouter)
 
 
 

@@ -1,6 +1,6 @@
-export const regexEmial = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+export const regexEmail = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
 
-export const regexPassword = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+export const regexPassword = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,32}$/;
 
 
 export const formatDateLong = (date) => {
@@ -17,4 +17,3 @@ export const formatTime = (date) => {
     const d = new Date(date);
     return `${d.getHours()}h${d.getMinutes()}`;
 }
-
