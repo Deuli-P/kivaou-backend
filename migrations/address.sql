@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS address (
-    id UUID PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     street_number TEXT,
     street TEXT NOT NULL,
     city TEXT NOT NULL,

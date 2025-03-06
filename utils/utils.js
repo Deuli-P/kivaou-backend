@@ -1,3 +1,6 @@
+import executeQuery from './dbReader.js'
+import path from "path";
+
 export const regexEmail = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
 
 export const regexPassword = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,32}$/;
@@ -16,4 +19,11 @@ export const formatDate = (date) => {
 export const formatTime = (date) => {
     const d = new Date(date);
     return `${d.getHours()}h${d.getMinutes()}`;
+}
+
+
+export const getUserById = async (id) => {
+  const filePath = path.join("queries/users/getUserById.sql");
+  const result = await executeQuery(filePath, [userId]);
+  return result[0] || null;
 }

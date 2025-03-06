@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS destinations (
-    id UUID PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name TEXT,
     organization_id UUID,
     service_type service_type,
