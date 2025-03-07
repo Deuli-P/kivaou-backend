@@ -154,76 +154,79 @@ export const getLogout = async (req, res) => {
     }
 }
 
+
 export const createUser = async (req, res) => {
-    try{
+    try {
+        console.log("createUser");
 
-        console.log('createUser');
-        const {firstname, lastname, email, password, photo_path } = req.body;
+        const { firstname, lastname, email, password, photo_path } = req.body;
 
-
-        //////// SECURITE 
-        if(firstname === '' || lastname === '' || email === '' || password === ''){
-            res.status(400).json({
+        console.log(firstname, lastname, email, password, photo_path);
+        // Vérifications de sécurité
+        if (!firstname || !lastname || !email || !password) {
+            return res.status(400).json({
                 status: 400,
-                message: 'Veuillez remplir tous les champs'
+                message: "Veuillez remplir tous les champs"
             });
         }
 
-        if (regexEmail.test(email) === false){
-            res.status(400).json({
+        const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!regexEmail.test(email)) {
+            return res.status(400).json({
                 status: 400,
-                message: 'Email incorrect'
+                message: "Email incorrect"
             });
         }
 
-        if(password.length < 6){
-            res.status(400).json({
+        if (password.length < 6) {
+            return res.status(400).json({
                 status: 400,
-                message: 'Mot de passe trop court'
-            });
-        }
-        
-        //on vérifie si l'email est déjà utilisé
-        const filePathCheckByEmail = path.join("queries/auth/getAuthByEmail.sql");
-        const resultCheckEmail = await executeQuery(filePathCheckByEmail, [email]);
-        if(resultCheckEmail.length > 0){
-            res.status(400).json({
-                status: 400,
-                message: 'Email déjà utilisé'
+                message: "Mot de passe trop court"
             });
         }
 
-        /////////////////
+        // Vérifier si l'email est déjà utilisé
+        const filePathCheckEmail = path.join("queries/auth/getIfEmailExist.sql");
+        const EmailExist = await executeQuery(filePathCheckEmail, [email]);
+ 
+        if (EmailExist) { 
+            return res.status(400).json({
+                status: 400,
+                message: "Email déjà utilisé"
+            });
+        }
 
+        // Hachage du mot de passe
         const hash = await bcrypt.hash(password, 10);
 
+        // Appeler la fonction SQL `create_user`
         const filePathCreateUser = path.join("queries/auth/createUser.sql");
         const resultCreateUser = await executeQuery(filePathCreateUser, [
-            email, 
-            firstname, 
-            lastname, 
+            email,
             hash,
-            photo_path
+            firstname,
+            lastname,
+            photo_path || null
         ]);
-        if(resultCreateUser.affectedRows === 0){
-            res.status(500).json({
+
+        if (resultCreateUser.rowCount === 0) {
+            return res.status(500).json({
                 status: 500,
-                message: 'Erreur serveur lors de la création de l\'utilisateur'
+                message: "Erreur serveur lors de la création de l'utilisateur"
             });
         }
-
+  
         res.status(201).json({
             status: 201,
-            message: 'Utilisateur créé'
+            message: "Utilisateur créé",
+            user: resultCreateUser.rows[0]
         });
 
-        
-    }
-    catch(e){
+    } catch (e) {
         console.error("createUser :", e);
         res.status(500).json({
-            status : 500,
-            message: "Erreur serveur lors de la création de lutilisateur"
+            status: 500,
+            message: "Erreur serveur lors de la création de l'utilisateur"
         });
-    };
-}
+    }
+};

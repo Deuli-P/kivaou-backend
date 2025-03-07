@@ -7,7 +7,8 @@ import dotenv from 'dotenv';
 import session from 'express-session';
 import PgSession from 'connect-pg-simple';
 import pool from './config/databases.js';
-import initTables from './migrations/initTables.js';
+import initTables from './migrations/tables/initTables.js';
+import initFunctions from './migrations/functions/initFunctions.js';
 
 
 const app = express();
@@ -65,10 +66,12 @@ app.use('/api/auth', authRouter)
 
 // 
 initTables().then(() => {
+  initFunctions();
   app.listen(process.env.PORT, () => {
       console.log(`🚀 Serveur démarré sur le port ${process.env.PORT}`);
   });
 }).catch(err => {
   console.error("❌ Erreur lors des migrations :", err);
 });
+ 
  
