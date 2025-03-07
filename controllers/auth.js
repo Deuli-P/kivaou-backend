@@ -33,7 +33,10 @@ export const getLogin = async (req, res) => {
 
         const authInfo = resultGetUser.rows[0].get_auth_by_email;
 
-        console.log(authInfo);
+
+        if(!authInfo){
+            return res.status(400).json({ status: 400, message: "Mauvais email ou mot de passe" });
+        }
 
 
         const isMatch = await bcrypt.compare(password, authInfo.password_save);
@@ -44,11 +47,12 @@ export const getLogin = async (req, res) => {
         const filePathGetUserInfo = path.join("queries/auth/getUserInfoByAuthId.sql");
         const resultGetUserInfo = await executeQuery(filePathGetUserInfo, [authInfo.id]);
 
-        if (!resultGetUserInfo.rows.length) {
+        const user = resultGetUserInfo.rows[0].get_user_info_by_auth_id;
+
+        if (!user) {
             return res.status(500).json({ status: 500, message: "Utilisateur introuvable" });
         }
 
-        const user = resultGetUserInfo.rows[0].get_user_info_by_auth_id;
 
         const token = jwt.sign({ id:user.id}, process.env.JWT_SECRET, { expiresIn: "24h" });
 
@@ -56,6 +60,7 @@ export const getLogin = async (req, res) => {
 
         res.status(200).json({
             status: 200,
+            success: true,
             message: "Connexion réussie",
             user :{
                 firstname: user.firstname,
@@ -70,7 +75,7 @@ export const getLogin = async (req, res) => {
         });
 
     } catch (e) {
-        console.error("loginUser :", e);
+        console.error(e);
         res.status(500).json({ status: 500, message: "Erreur serveur lors de la connexion" });
     }
 };
@@ -91,27 +96,27 @@ export const getSession = async (req, res) => {
             res.status(401).json({message: 'Non connecté'});
         }
 
-        const filePathDataUser = path.join("queries/auth/getUserById.sql");
-        const userData = await executeQuery(filePathDataUser, [token.id]);
-        if(userData.length === 0){
-            res.status(500).json({
-                status: 500,
-                message: 'Erreur serveur'
-            });
+        const filePathDataUser = path.join("queries/auth/getUserInfoByUserId.sql");
+        const resultGetUserInfo = await executeQuery(filePathDataUser, [token.id]);
+
+        const user = resultGetUserInfo.rows[0].get_user_info_by_user_id;
+
+        if (!user) {
+            req.session.destroy();
+            return res.status(500).json({ status: 500, message: "Utilisateur introuvable" });
         }
 
         res.status(200).json({
             status: 200,
             success: true,
-            message: 'Connecté',
             user: {
-                firstname: userData[0].firstname,
-                lastname: userData[0].lastname,
-                email: userData[0].email,
-                photo_path: userData[0].photo_path,
+                firstname: user.firstname,
+                lastname: user.lastname,
+                email: user.email,
+                photo_path: user.photo_path,
                 organization: {
-                    id: userData[0].organization_id,
-                    name: userData[0].organization_name,
+                    id: user.organization_id,
+                    name: user.organization_name,
                 },
             }
         });
@@ -124,22 +129,19 @@ export const getSession = async (req, res) => {
 }
 
 export const getLogout = async (req, res) => {
-    try{
-        req.session.destroy()
-        .then(e=> {
-            res.status(200).json({message: 'Déconnexion réussie'});
-        })
-        .catch(e => {
-            console.error(e);
-            res.status(500).json({message: 'Erreur serveur'});
+    try {
+        req.session.destroy((err) => {
+            if (err) {
+                console.error("Erreur lors de la déconnexion :", err);
+                return res.status(500).json({ message: "Erreur serveur" });
+            }
+            res.status(200).json({ success: true, message: "Déconnexion réussie" });
         });
-
-    }
-    catch(e){
+    } catch (e) {
         console.error(e);
-        res.status(500).json({message: 'Erreur serveur'});
+        res.status(500).json({ message: "Erreur serveur" });
     }
-}
+};
 
 
 export const createUser = async (req, res) => {
