@@ -6,7 +6,7 @@ const sqlFiles = [
     'create_user.sql',
     'get_auth_by_email.sql', 
     'get_user_info_by_auth_id.sql',
-    // 'fetch_organization_details_by_id.sql'
+    'get_user_info_by_user_id.sql', 
 ];
 
 const initFunctions = async () => {
