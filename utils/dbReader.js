@@ -10,7 +10,7 @@ const executeQuery = async (sqlFilePath, values = []) => {
         return result || result.rows[0];
     } catch (error) {
         console.error(`❌ Erreur lors de l'exécution de la requête ${sqlFilePath} :`, error);
-        throw error;
+        throw error; 
     }
 };
 

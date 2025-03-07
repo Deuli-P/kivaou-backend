@@ -13,6 +13,14 @@ DECLARE
     _user_id UUID;
 BEGIN
 
+    -- Check si l'email n'est pas déjà utilisé
+    IF EXISTS (SELECT 1 FROM auth WHERE email = _email) THEN
+        RETURN jsonb_build_object(
+            'status', 'error',
+            'message', 'Email already exists'
+        );
+    END IF;
+
     -- Insérer dans la table auth et récupérer l'ID généré
     INSERT INTO auth (email, password)
     VALUES (_email, _password)

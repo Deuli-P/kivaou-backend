@@ -4,8 +4,8 @@ import pool from '../../config/databases.js';
 
 const sqlFiles = [
     'create_user.sql',
-    'get_if_email_exist.sql',
-    // 'fetch_user_by_id.sql',
+    'get_auth_by_email.sql', 
+    'get_user_info_by_auth_id.sql',
     // 'fetch_organization_details_by_id.sql'
 ];
 
@@ -15,7 +15,7 @@ const initFunctions = async () => {
         for (const file of sqlFiles) { 
             const filePath = path.join('migrations/functions', file);
             const query = await readFile(filePath, 'utf-8');
-            await pool.query(query); 
+            await pool.query(query);
         }   
     } catch (error) {
         console.error("❌ Erreur lors de l'initialisation des functions :", error);

@@ -28,8 +28,7 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
 }));
-
-
+ 
 app.use(session({
     store: new (PgSession(session))({
       pool,
@@ -53,7 +52,7 @@ app.get('/api', (req, res) => {
   console.log('ping')
     res.json('Hello World');
 }
-);
+);  
 
 app.use('/api/auth', authRouter)
 //app.use('/api/organisation', organisationRouter)

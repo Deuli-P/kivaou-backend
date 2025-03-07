@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import { getSession, postLogin, getLogout, createUser } from '../controllers/auth.js';
+import { getSession, getLogin, getLogout, createUser } from '../controllers/auth.js';
 const authRouter = Router();
 
 
 authRouter.get('/check', getSession);
-authRouter.post('/login', postLogin);
+authRouter.post('/login', getLogin);
 authRouter.get('/logout', getLogout);
 authRouter.post('/register', createUser);
 
