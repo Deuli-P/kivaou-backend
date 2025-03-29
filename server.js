@@ -9,6 +9,7 @@ import PgSession from 'connect-pg-simple';
 import pool from './config/databases.js';
 import initTables from './migrations/tables/initTables.js';
 import initFunctions from './migrations/functions/initFunctions.js';
+import organisationRouter from './routes/organisation.js';
 
 
 const app = express();
@@ -55,7 +56,7 @@ app.get('/api', (req, res) => {
 );  
 
 app.use('/api/auth', authRouter)
-//app.use('/api/organisation', organisationRouter)
+app.use('/api/organization', organisationRouter)
 //app.use('/api/user', userRouter)
 //app.use('/api/event', eventRouter)
 //app.use('/api/comment', commentRouter)

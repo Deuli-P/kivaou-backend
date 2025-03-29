@@ -1,11 +1,11 @@
 import { Router } from 'express';
-// import {  } from '../controllers/organisation.js';
+import { createOrganization } from '../controllers/organization.js';
 const organisationRouter = Router();
 
 
 organisationRouter.get('/:id', );
 organisationRouter.put('/edit', );
-organisationRouter.post('/create', );
+organisationRouter.post('/create', createOrganization);
 organisationRouter.delete('/delete', );
 organisationRouter.get('/personnal', );
 
