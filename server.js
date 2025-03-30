@@ -9,7 +9,7 @@ import PgSession from 'connect-pg-simple';
 import pool from './config/databases.js';
 import initTables from './migrations/tables/initTables.js';
 import initFunctions from './migrations/functions/initFunctions.js';
-import organisationRouter from './routes/organisation.js';
+import organisationRouter from './routes/organization.js';
 import userRouter from './routes/user.js';
 
 

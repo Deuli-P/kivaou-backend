@@ -194,11 +194,28 @@ export const createUser = async (req, res) => {
                 message: "Erreur serveur lors de la création de l'utilisateur"
             });
         }
+
+        const user = resultCreateUser.rows[0].create_user;
+        if (!user || !user.id) {
+            return res.status(500).json({
+                status: 500,
+                message: "Erreur serveur lors de la création de l'utilisateur"
+            });
+        }
+        
+        const token = jwt.sign({ id:user.id}, process.env.JWT_SECRET, { expiresIn: "24h" });
+
+        req.session.token = token;
   
         res.status(201).json({
             status: 201,
             message: "Utilisateur créé",
-            user: resultCreateUser.rows[0]
+            user: {
+                email: user.email,
+                firstname: user.firstname,
+                lastname: user.lastname,
+                photo_path: user.photo_path
+            }
         });
 
     } catch (e) {

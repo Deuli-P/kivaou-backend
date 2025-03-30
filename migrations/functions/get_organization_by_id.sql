@@ -1,19 +1,10 @@
-CREATE OR REPLACE FUNCTION create_organization(
-    _name TEXT,
-    _number INTEGER,
-    _street TEXT,
-    _postal_code INTEGER,
-    _city TEXT,
-    _country TEXT,
-    _owner_id UUID
+CREATE OR REPLACE FUNCTION get_organization_by_id(
+    _id UUID
 ) 
 RETURNS JSONB
 LANGUAGE plpgsql
 AS $$
-DECLARE 
-    _organization_id UUID;
-    _address_id UUID;
-    _org_record RECORD;
+
 BEGIN
     -- Vérifier si l'organisation existe déjà
     IF EXISTS (SELECT 1 FROM organizations WHERE name = _name) THEN
@@ -60,7 +51,7 @@ BEGIN
         ) AS address
     INTO _org_record
     FROM organizations o
-    JOIN address a ON a.id = o.address_id
+    JOIN public.address a ON a.id = o.address_id
     WHERE o.id = _organization_id;
 
     -- Retourner l'objet JSON complet

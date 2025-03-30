@@ -32,9 +32,9 @@ export const createOrganization = async (req, res) => {
         }
         const result = resultCreateOrganization.rows[0].create_organization;
 
-        res.status(200).json({message: 'Organisation créée', organization_id: result.organization_id});
+        res.status(200).json({message: 'Organisation créée', organization: result});
 
-    } 
+    }  
     catch(e){
         console.error(e);
         res.status(500).json({ status: 500, message: "Erreur serveur lors de la création de l'organisation" });
