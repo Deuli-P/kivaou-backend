@@ -8,7 +8,7 @@ const sqlFiles = [
     'get_user_info_by_auth_id.sql',
     'get_user_info_by_user_id.sql', 
     'create_organization.sql',
-    'update_user_info.sql',
+    'update_user_info.sql'
 ];
 
 const initFunctions = async () => {

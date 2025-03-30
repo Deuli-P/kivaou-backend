@@ -2,7 +2,7 @@ CREATE OR REPLACE FUNCTION update_user_info(
     _user_id UUID,
     _firstname TEXT,
     _lastname TEXT,
-    _photo_path TEXT DEFAULT NULL
+    _photo_path TEXT
 ) 
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -25,7 +25,7 @@ BEGIN
     RETURN jsonb_build_object(
         'firstname', _firstname,
         'lastname', _lastname,
-        'photo_path', _photo_path,
+        'photo_path', _photo_path
     );
 END;
 $$;
