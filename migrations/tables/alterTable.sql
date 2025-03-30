@@ -39,7 +39,7 @@ END $$;
 DO $$ 
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'fk_owner_id') THEN
-        ALTER TABLE organizations ADD CONSTRAINT fk_owner_id FOREIGN KEY (owner) REFERENCES users(id);
+        ALTER TABLE organizations ADD CONSTRAINT fk_owner_id FOREIGN KEY (owner_id) REFERENCES users(id);
     END IF;
 END $$;
 
