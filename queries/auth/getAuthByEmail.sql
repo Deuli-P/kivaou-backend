@@ -1,4 +1,3 @@
-SELECT get_auth_by_email($1);
-
---   $1 
--- email 
+SELECT get_auth_by_email(
+    $1 -- _email
+);

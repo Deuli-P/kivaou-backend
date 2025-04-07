@@ -26,12 +26,9 @@ BEGIN
     END IF;
 
     -- Inserer l'adresse dans la table address
-    SELECT create_address(_number, _street, _postal_code, _city, _country, _owner_id)
-    INTO _address_id;
-
-    IF _address_id IS NULL THEN
-        RAISE EXCEPTION 'Address creation failed';
-    END IF;
+    INSERT INTO address (street, street_number, city, postale_code, country, created_by)
+    VALUES (_street, _number, _city, _postal_code, _country, _owner_id)
+    RETURNING id INTO _address_id;
 
     -- Insérer dans la table organizations 
     INSERT INTO organizations (owner_id, address_id, name, created_by)

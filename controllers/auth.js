@@ -4,10 +4,6 @@ import executeQuery from '../utils/dbReader.js';
 import { regexEmail } from '../utils/utils.js';
 import path from 'path';
 
-
-// J'ai besoin : 
-// - d'envoyer la demande de connexion avec email et password et de renvoyer si correcte un token
-
 export const getLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -53,8 +49,7 @@ export const getLogin = async (req, res) => {
             return res.status(500).json({ status: 500, message: "Utilisateur introuvable" });
         }
 
-
-        const token = jwt.sign({ id:user.id}, process.env.JWT_SECRET, { expiresIn: "24h" });
+        const token = jwt.sign({ id:user.id}, process.env.JWT_SECRET, { expiresIn: 24 * 60 * 60 });
 
         req.session.token = token;
 
@@ -109,18 +104,8 @@ export const getSession = async (req, res) => {
         res.status(200).json({
             status: 200,
             success: true,
-            user: {
-                firstname: user.firstname,
-                lastname: user.lastname,
-                email: user.email,
-                photo_path: user.photo_path,
-                organization: {
-                    id: user.organization_id,
-                    name: user.organization_name,
-                },
-            }
+            user: user
         });
-    
     }
     catch(e){
         console.error(e);

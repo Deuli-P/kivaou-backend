@@ -10,10 +10,10 @@ DECLARE
 BEGIN
     SELECT 
     json_build_object(
-        'id', u.id, -- Spécifier l'id de la table users
+        'id', u.id,
         'firstname', u.firstname,
         'lastname', u.lastname,
-        'email', a.email,
+        'email', auth.email,
         'photo_path', u.photo_path,
         'organization', json_build_object(
             'id', org.id, 
@@ -33,7 +33,7 @@ BEGIN
     )
     INTO _user_info
     FROM users u
-    LEFT JOIN auth a ON a.id = u.auth_id
+    LEFT JOIN auth ON auth.id = u.auth_id
     LEFT JOIN organizations org ON org.id = u.organization_id
     LEFT JOIN public.address a ON a.id = org.address_id
     WHERE u.auth_id = _auth_id

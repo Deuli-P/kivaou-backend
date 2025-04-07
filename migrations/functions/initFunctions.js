@@ -8,16 +8,22 @@ const sqlFiles = [
     'get_user_info_by_auth_id.sql',
     'get_user_info_by_user_id.sql', 
     'create_organization.sql',
-    'update_user_info.sql'
-];
-
+    'update_user_info.sql',
+    'get_organization_by_id.sql',
+    'create_address.sql',
+    'check_middleware_organization.sql',
+    'get_organization_places.sql'
+]; 
+ 
 const initFunctions = async () => {
     console.log("🚀 Initialisation des Functions...");
     try {
         for (const file of sqlFiles) { 
+            console.log('query :', file);
             const filePath = path.join('migrations/functions', file);
             const query = await readFile(filePath, 'utf-8');
-            console.log('filePath :', file);
+            //console.log(`==> SQL Query from ${file}:\n`, query);
+            console.log(' query DONE');
             await pool.query(query);
             
         }   

@@ -21,7 +21,7 @@ BEGIN
         photo_path = _photo_path
     WHERE id = _user_id;
 
-   -- Retourne l'id de l'organisation
+   -- Retourne les nouvelles infos du user
     RETURN jsonb_build_object(
         'firstname', _firstname,
         'lastname', _lastname,

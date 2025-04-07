@@ -17,7 +17,7 @@ BEGIN
     IF EXISTS (SELECT 1 FROM auth WHERE email = _email) THEN
         RETURN jsonb_build_object(
             'status', 'error',
-            'message', 'Email already exists'
+            'message', 'Creating user failed'
         );
     END IF;
 

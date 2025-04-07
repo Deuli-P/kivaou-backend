@@ -18,7 +18,7 @@ DO $$
 
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'event_status') THEN
-        CREATE TYPE event_status AS ENUM ( 'started', 'expired', 'cancelled' );
+        CREATE TYPE event_status AS ENUM ( 'started', 'deleted', 'cancelled' );
     END IF;
 END $$;
 

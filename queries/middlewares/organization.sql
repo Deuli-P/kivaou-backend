@@ -1,3 +1,4 @@
 SELECT check_middleware_organization(
-    $1::UUID -- _user_id
+    $1   -- _user_id
+    ,$2  -- _organization_id
     );

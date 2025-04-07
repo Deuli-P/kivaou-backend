@@ -1,7 +1,5 @@
-
-// - J'ai besoin de vérifier si le token est présent et valide
-// - J'ai besoin de savoir si il y a un utilisateur connecté et si il est Admin
-
+import jwt from 'jsonwebtoken';
+ 
 export const authMiddleware = async (req, res, next) => {
 
     const token = req.session.token;

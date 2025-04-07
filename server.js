@@ -43,13 +43,13 @@ app.use(session({
     cookie: {
       maxAge: process.env.JWT_EXPIRE, 
       // secure: false, // Supprimé pour le développement
-      // httpOnly: true, // Supprimé pour le développement
+      // httpOnly: true, // Supprimé pour le développement 
     }
   }));
 
 
 // =================== ROUTES ===================
-
+ 
 app.get('/api', (req, res) => {
   console.log('ping')
     res.json('Hello World');

@@ -1,45 +1,31 @@
 CREATE OR REPLACE FUNCTION get_organization_by_id(
     _id UUID
-) 
+)
 RETURNS JSONB
 LANGUAGE plpgsql
 AS $$
-
+DECLARE
+    _org_record JSONB;
+    _users_list JSONB;
+    _events_past JSONB;
+    _events_future JSONB;
 BEGIN
-    -- Vérifier si l'organisation existe déjà
-    IF EXISTS (SELECT 1 FROM organizations WHERE name = _name) THEN
-        RAISE EXCEPTION 'Organization with name % already exists', _name;
+    -- Vérifier si l'organisation existe
+    IF NOT EXISTS (SELECT 1 FROM organizations WHERE id = _id) THEN
+        RAISE EXCEPTION 'Organization with ID % does not exist', _id;
     END IF;
 
-    -- Vérifier si l'utilisateur existe
-    IF NOT EXISTS (SELECT 1 FROM users WHERE id = _owner_id) THEN
-        RAISE EXCEPTION 'User with ID % does not exist', _owner_id;
-    END IF;
-
-    -- Inserer l'adresse dans la table address
-    INSERT INTO address (street, street_number, city, postale_code, country, created_by)
-    VALUES (_street, _number, _city, _postal_code, _country, _owner_id)
-    RETURNING id INTO _address_id;
-
-    -- Insérer dans la table organizations 
-    INSERT INTO organizations (owner_id, address_id, name, created_by)
-    VALUES (_owner_id, _address_id, _name, _owner_id)
-    RETURNING id INTO _organization_id;
-
-    IF _organization_id IS NULL THEN
-        RAISE EXCEPTION 'Failed to create organization';
-    END IF;
-
-    UPDATE users
-    SET organization_id = _organization_id
-    WHERE id = _owner_id;
-
-    -- Récupérer toutes les infos orga + adresse
-    SELECT 
-        o.id,
-        o.name,
-        o.owner_id,
-        jsonb_build_object(
+    -- Récupérer les infos de l'organisation et de son adresse
+    SELECT jsonb_build_object(
+        'id', o.id,
+        'name', o.name,
+        'owner', jsonb_build_object(
+            'id', o.owner_id,
+            'firstname', u.firstname,
+            'lastname', u.lastname,
+            'photo_path', u.photo_path
+        ),
+        'address', jsonb_build_object(
             'id', a.id,
             'street', a.street,
             'street_number', a.street_number,
@@ -48,14 +34,60 @@ BEGIN
             'country', a.country,
             'longitude', a.longitude,
             'latitude', a.latitude
-        ) AS address
+        )
+    )
     INTO _org_record
     FROM organizations o
-    JOIN public.address a ON a.id = o.address_id
-    WHERE o.id = _organization_id;
+    JOIN address a ON a.id = o.address_id
+    LEFT JOIN users u ON u.id = o.owner_id
+    WHERE o.id = _id;
 
-    -- Retourner l'objet JSON complet
-    RETURN to_jsonb(_org_record);
+    -- Récupérer les autres utilisateurs de l'organisation (hors owner)
+    SELECT jsonb_agg(jsonb_build_object(
+        'id', u.id,
+        'firstname', u.firstname,
+        'lastname', u.lastname,
+        'email', auth.email,
+        'photo_path', u.photo_path
+    ))
+    INTO _users_list
+    FROM users u
+    LEFT JOIN auth ON auth.id = u.auth_id
+    WHERE u.organization_id = _id AND u.id != (_org_record->>'owner_id')::UUID;
 
+    -- Récupérer les événements passés ( la veille )
+    SELECT jsonb_agg(jsonb_build_object(
+        'id', e.id,
+        'name', e.title,
+        'start_date', e.start_date,
+        'end_date', e.end_date,
+        'description', e.description
+    ))
+    INTO _events_past
+    FROM events e
+    WHERE e.organization_id = _id AND e.start_date < NOW()+'1 day'::interval
+        AND (status != 'deleted' OR status != 'cancelled');
+
+    -- Récupérer les événements futurs (aujourd'hui et après)
+    SELECT jsonb_agg(jsonb_build_object(
+        'id', e.id,
+        'name', e.title,
+        'start_date', e.start_date,
+        'end_date', e.end_date,
+        'description', e.description
+    ))
+    INTO _events_future
+    FROM events e
+    WHERE e.organization_id = _id AND e.start_date >= NOW()+'1 day'::interval
+     AND (status != 'deleted' OR status != 'cancelled');
+
+    
+    -- Retourner le JSON global
+    RETURN jsonb_build_object(
+        'organization_info', _org_record,
+        'users', COALESCE(_users_list, '[]'::jsonb),
+        'events_past', COALESCE(_events_past, '[]'::jsonb),
+        'events_future',  COALESCE(_events_future, '[]'::jsonb)
+    );
 END;
 $$;
