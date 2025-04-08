@@ -1,20 +1,11 @@
-import jwt from 'jsonwebtoken';
 import executeQuery from '../utils/dbReader.js';
 import path from 'path';
 
 
 export const updateUser = async (req, res) => {
     try{
-        const sessionToken = req.session.token;
-        if(!sessionToken){
-            res.status(401).json({message: 'Non connecté'});
-        }
-        const token = jwt.verify(sessionToken, process.env.JWT_SECRET);
+        const user = req.user;
 
-        if(!token){
-            req.session.destroy();
-            res.status(401).json({message: 'Non connecté'});
-        }
 
         const { firstname, lastname, photo_path } = req.body;
 
@@ -26,7 +17,7 @@ export const updateUser = async (req, res) => {
         }
         const filePathUpdateUser = path.join("queries/auth/updateUserInfo.sql");
         const resultUpdateUser = await executeQuery(filePathUpdateUser, [
-            token.id,
+            user.id,
             firstname,
             lastname,
             photo_path || null

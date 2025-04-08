@@ -5,19 +5,13 @@ import path from 'path';
 
 export const isMember = async (req, res, next) => {
     try {
-        const sessionToken = req.session.token;
 
-
-        if (!sessionToken) {
-            return res.status(401).json({ message: 'Non connecté' });
-        }
-
-        const decoded = jwt.verify(sessionToken, process.env.JWT_SECRET);
+        const user = req.user;
 
         const { id } = req.params;
 
         const filePathMiddlewareOrganizations = path.join("queries/middlewares/organization.sql");
-        const resultMiddlewareOrganizations = await executeQuery(filePathMiddlewareOrganizations, [decoded.id, id]);
+        const resultMiddlewareOrganizations = await executeQuery(filePathMiddlewareOrganizations, [user.id, id]);
 
         const resultRow = resultMiddlewareOrganizations.rows[0].check_middleware_organization;
 
@@ -26,6 +20,7 @@ export const isMember = async (req, res, next) => {
                 message: 'Utilisateur non membre de cette organisation ou organisation introuvable'
             }); 
         }
+        
         next();
 
     } catch (e) {

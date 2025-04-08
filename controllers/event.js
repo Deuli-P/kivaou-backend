@@ -1,27 +1,10 @@
-import jwt from 'jsonwebtoken';
 import executeQuery from '../utils/dbReader.js';
 import path from 'path';
 
 export const createEvent = async (req, res) => {
     try{
-        const sessionToken = req.session.token;
 
-        if(!sessionToken){
-            res.status(401).json({
-                message: 'Non connecté'
-            });
-        }
-
-        const token = jwt.verify(sessionToken, process.env.JWT_SECRET);
-
-        if(!token){
-            req.session.destroy();
-            res.status(401).json({
-                message: 'Non connecté'
-            });
-        }
-
-        const { name, description, start_date, end_date, organization_id } = req.body;
+        const { name, description, start_date, end_date, organization_id, destination_id } = req.body;
 
         if(!name || !start_date || !organization_id){
             res.status(400).json({
@@ -39,11 +22,9 @@ export const createEvent = async (req, res) => {
                 message: 'La date de fin ne doit pas être avant la date de début'
             });
         }
-
-        const user_id = token.id;
         
         const filePathCreateEvent = path.join("queries/event/createEvent.sql");
-        const resultCreateEvent = await executeQuery(filePathCreateEvent, [name, description, start_date, end_date, organization_id]);
+        const resultCreateEvent = await executeQuery(filePathCreateEvent, [name, description, start_date, end_date, destination_id, organization_id, req.user.id]);
 
         if(resultCreateEvent.rowCount === 0){
             res.status(400).json({
@@ -63,4 +44,13 @@ export const createEvent = async (req, res) => {
             message: 'Erreur serveur'
         });
     }
+};
+
+export const getEvent = async (req, res) => {
+};
+
+export const editEvent = async (req, res) => {
+};
+
+export const deleteEvent = async (req, res) => {
 };

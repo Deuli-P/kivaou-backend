@@ -8,6 +8,8 @@ export const getLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
 
+        console.log('start login')
+
         if (!email || !password) {
             return res.status(400).json({ status: 400, message: "Veuillez remplir tous les champs" });
         }
@@ -49,7 +51,7 @@ export const getLogin = async (req, res) => {
             return res.status(500).json({ status: 500, message: "Utilisateur introuvable" });
         }
 
-        const token = jwt.sign({ id:user.id}, process.env.JWT_SECRET, { expiresIn: 24 * 60 * 60 });
+        const token = jwt.sign({ id:user.id}, process.env.JWT_SECRET, { expiresIn: 24 * 60 * 60 * 1000 });
 
         req.session.token = token;
 
@@ -66,7 +68,8 @@ export const getLogin = async (req, res) => {
                     id: user.organization.id,
                     name: user.organization.name,
                 }
-            }
+            },
+            token: token
         });
 
     } catch (e) {
@@ -78,18 +81,7 @@ export const getLogin = async (req, res) => {
 
 export const getSession = async (req, res) => {
     try{
-        const sessionToken = req.session.token;
-
-        if(!sessionToken){
-            res.status(401).json({message: 'Non connecté'});
-        }
-
-        const token = jwt.verify(sessionToken, process.env.JWT_SECRET);
-
-        if(!token){
-            req.session.destroy();
-            res.status(401).json({message: 'Non connecté'});
-        }
+        const token = req.user;
 
         const filePathDataUser = path.join("queries/auth/getUserInfoByUserId.sql");
         const resultGetUserInfo = await executeQuery(filePathDataUser, [token.id]);
@@ -104,7 +96,8 @@ export const getSession = async (req, res) => {
         res.status(200).json({
             status: 200,
             success: true,
-            user: user
+            user: user,
+            token: token
         });
     }
     catch(e){

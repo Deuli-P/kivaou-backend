@@ -11,6 +11,7 @@ import initTables from './migrations/tables/initTables.js';
 import initFunctions from './migrations/functions/initFunctions.js';
 import organisationRouter from './routes/organization.js';
 import userRouter from './routes/user.js';
+import eventRouter from './routes/event.js';
 
 
 const app = express();
@@ -41,7 +42,7 @@ app.use(session({
     resave: true,
     saveUninitialized: true,
     cookie: {
-      maxAge: process.env.JWT_EXPIRE, 
+      maxAge: 24 * 60 * 60 * 1000, 
       // secure: false, // Supprimé pour le développement
       // httpOnly: true, // Supprimé pour le développement 
     }
@@ -49,17 +50,12 @@ app.use(session({
 
 
 // =================== ROUTES ===================
- 
-app.get('/api', (req, res) => {
-  console.log('ping')
-    res.json('Hello World');
-}
-);  
 
-app.use('/api/auth', authRouter)
-app.use('/api/organization', organisationRouter)
+
 app.use('/api/user', userRouter)
-//app.use('/api/event', eventRouter)
+app.use('/api/auth', authRouter)
+app.use('/api/event', eventRouter)
+app.use('/api/organization', organisationRouter)
 //app.use('/api/comment', commentRouter)
 
 
