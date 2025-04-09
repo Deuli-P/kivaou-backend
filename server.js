@@ -58,7 +58,7 @@ app.use('/api/event', eventRouter)
 app.use('/api/organization', organisationRouter)
 //app.use('/api/comment', commentRouter)
 
-app.get('/', (req, res) => {
+app.get('/api/test', (req, res) => {
   res.status(200).json({
     message: 'API is running'
   });
