@@ -25,7 +25,7 @@ jobs:
       - name: Build and Push Docker image (backend)
         uses: docker/build-push-action@v5
         with:
-          context: ./kivaou-backend
+          context: .
           file: ./Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/kivaou-backend:latest
