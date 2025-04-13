@@ -13,12 +13,6 @@ DECLARE
     _address_id UUID;
 BEGIN
 
-
-    -- Vérifier si l'utilisateur existe
-    IF NOT EXISTS (SELECT 1 FROM users WHERE id = _user_id) THEN
-        RAISE EXCEPTION 'User with ID % does not exists', _user_id;
-    END IF;
-
     -- Inserer l'adresse dans la table address
     INSERT INTO address (street, street_number, city, postale_code, country, created_by)
     VALUES (_street, _number, _city, _postal_code, _country, _user_id)

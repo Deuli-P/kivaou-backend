@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION get_organization_places(
+CREATE OR REPLACE FUNCTION get_destinations(
     _organization_id UUID,
     _user_id UUID
 )

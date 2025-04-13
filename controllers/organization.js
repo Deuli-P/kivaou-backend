@@ -60,32 +60,3 @@ export const getOrganizations = async (req, res) => {
         return res.status(500).json({ status: 500, message: "Erreur serveur lors de la récupération des organisations" });
     }
 };
-
-export const getOrganizationPlaces = async (req, res) => {
-    try{
-        const user = req.user;
-
-        const { id } = req.params;
-        
-        const filePathGetPlaces = path.join("queries/organization/getOrganizationPlaces.sql");
-        const resultGetPlaces = await executeQuery(filePathGetPlaces, [id, user.id]);
-
-        if(resultGetPlaces.rowCount === 0){
-            return res.status(400).json({message: 'Erreur lors de la récupération des lieux'});
-        }
-        const result = resultGetPlaces.rows[0].get_organization_places;
-
-        if(result.length === 0){
-            return res.status(400).json({message: 'Erreur lors de la récupération des lieux'});
-        }
-
-        return res.status(200).json({
-            message: 'Lieux trouvés', 
-            places: result
-        });
-    }
-    catch(e){
-        console.error(e);
-        res.status(500).json({ status: 500, message: "Erreur serveur lors de la récupération des lieux" });
-    }
-};

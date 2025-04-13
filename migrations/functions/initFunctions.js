@@ -1,7 +1,7 @@
 import { readFile } from 'fs/promises';
 import path from 'path';
 import pool from '../../config/databases.js';
-
+ 
 const sqlFiles = [
     'create_user.sql',
     'get_auth_by_email.sql', 
@@ -10,10 +10,13 @@ const sqlFiles = [
     'create_organization.sql',
     'update_user_info.sql',
     'get_organization_by_id.sql',
-    'create_address.sql',
+    'create_address.sql', 
     'check_middleware_organization.sql',
-    'get_organization_places.sql'
-]; 
+    'get_destinations.sql',
+    'create_destination.sql',
+    'delete_destination.sql',
+    'check_middleware_owner.sql'
+];
  
 const initFunctions = async () => {
     console.log("🚀 Initialisation des Functions...");
@@ -25,7 +28,7 @@ const initFunctions = async () => {
             //console.log(`==> SQL Query from ${file}:\n`, query);
             console.log(' query DONE');
             await pool.query(query);
-            
+             
         }   
     } catch (error) {
         console.error("❌ Erreur lors de l'initialisation des functions :", error);

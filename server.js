@@ -12,6 +12,7 @@ import initFunctions from './migrations/functions/initFunctions.js';
 import organisationRouter from './routes/organization.js';
 import userRouter from './routes/user.js';
 import eventRouter from './routes/event.js';
+import destinationRouter from './routes/destination.js';
 
 
 const app = express();
@@ -55,6 +56,7 @@ app.use(session({
 app.use('/api/user', userRouter)
 app.use('/api/auth', authRouter)
 app.use('/api/event', eventRouter)
+app.use('/api/destination', destinationRouter)
 app.use('/api/organization', organisationRouter)
 //app.use('/api/comment', commentRouter)
 

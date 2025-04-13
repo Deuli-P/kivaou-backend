@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS address (
     postale_code TEXT NOT NULL,
     longitude FLOAT,
     latitude FLOAT,
+    formatted_address TEXT,
     created_by UUID NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP,
