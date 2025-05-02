@@ -67,6 +67,7 @@ export const getLogin = async (req, res) => {
                 organization: {
                     id: user.organization.id,
                     name: user.organization.name,
+                    role: user.organization.role
                 }
             },
             token: token

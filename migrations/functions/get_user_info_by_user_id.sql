@@ -18,17 +18,10 @@ BEGIN
         'organization', json_build_object(
             'id', org.id,
             'name', org.name,
-            'owner_id', org.owner_id,
-            'address', json_build_object(
-                'id', a.id,
-                'street_number', a.street_number,
-                'street', a.street,
-                'city', a.city,
-                'postal_code', a.postale_code,
-                'country', a.country,
-                'longitude', a.longitude,
-                'latitude', a.latitude
-            )
+            'role', CASE 
+                WHEN org.owner_id = u.id THEN 'OWNER'
+                ELSE 'MEMBER'
+            END
         )
     )
     INTO _user_info

@@ -3,7 +3,7 @@ import path from 'path';
 
 export const createEvent = async (req, res) => {
     try{
-
+        console.log("createEvent");
         const { name, description, start_date, end_date, organization_id, destination_id } = req.body;
 
         if(!name || !start_date || !organization_id){

@@ -48,6 +48,11 @@ BEGIN
         RETURN jsonb_build_object('status', 403, 'message', 'User is not the owner of the organization');
     END IF;
 
+    --Vérifier si le schedule est valide
+    IF _schedule IS NOT NULL AND jsonb_typeof(_schedule) <> 'array' THEN
+        RETURN jsonb_build_object('status', 400, 'message', 'Schedule doit être un tableau JSON');
+    END IF;
+
     -- Insérer l'adresse
     SELECT public.create_address(
         _street_number,

@@ -40,8 +40,14 @@ export const createDestionation = async (req, res) => {
         if(!name  || !street || !city || !postal_code || !country || !phone || !service_type || !speciality){
             return res.status(400).json({message: 'Veuillez remplir tous les champs'});
         }
+        if (schedule && !Array.isArray(schedule)) {
+            return res.status(400).json({ message: 'Schedule doit être un tableau JSON valide.' });
+          }
+          
+        const jsonSchedule = schedule ? JSON.stringify(schedule) : null;
+
         const filePathCreateDestination = path.join("queries/destination/createDestination.sql");
-        const resultCreateDestination = await executeQuery(filePathCreateDestination, [name, id, number, street, postal_code, city, country, longitude, latitude, user.id, service_type, service_link, schedule, photo_path, google_map, speciality, phone, website]);
+        const resultCreateDestination = await executeQuery(filePathCreateDestination, [name, id, number, street, postal_code, city, country, longitude, latitude, user.id, service_type, service_link, jsonSchedule, photo_path, google_map, speciality, phone, website]);
 
         if(resultCreateDestination.rowCount === 0){
             return res.status(400).json({message: 'Erreur lors de la création du lieu'});
@@ -54,4 +60,4 @@ export const createDestionation = async (req, res) => {
         console.error(e);
         res.status(500).json({ status: 500, message: "Erreur serveur lors de la création du lieu" });
     }
-}
+};

@@ -39,6 +39,7 @@ export const getOrganizations = async (req, res) => {
         if(resultGetOrganizations.rowCount === 0){
             res.status(400).json({message: 'Aucune organisation trouvée'});
         }
+
          
         const result = resultGetOrganizations.rows[0].get_organization_by_id;
 
@@ -50,7 +51,7 @@ export const getOrganizations = async (req, res) => {
                 past : result.past_events,
                 future : result.future_events
             },
-            role: result.role
+            destinations: result.destinations
 
         });
 
