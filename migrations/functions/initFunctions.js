@@ -15,7 +15,13 @@ const sqlFiles = [
     'get_destinations.sql',
     'create_destination.sql',
     'delete_destination.sql',
-    'check_middleware_owner.sql'
+    'check_middleware_owner.sql',
+    'create_event.sql',
+    'get_all_events_by_organization_id.sql'
+    //'get_organization_events.sql',
+    //'get_event_by_id.sql',
+    //'update_event.sql',
+    //'delete_event.sql'
 ];
  
 const initFunctions = async () => {
