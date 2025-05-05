@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION get_all_events_by_organization_id(
+CREATE OR REPLACE FUNCTION get_all_events_active_by_organization_id(
     _organization_id UUID,
     _user_id UUID
 )
@@ -6,7 +6,7 @@ RETURNS JSONB
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    _places JSONB;
+    _events JSONB;
 BEGIN
     -- Vérifier si l'organisation existe
     IF NOT EXISTS (SELECT 1 FROM organizations WHERE id = _organization_id) THEN
@@ -27,21 +27,21 @@ BEGIN
     SELECT jsonb_agg(
         jsonb_build_object(
             'id', evt.id,
-            'title', evt.name,
-            'photo_path', evt.photo_path,
-            'speciality', evt.speciality,
+            'title', evt.title,
+            'start_date', evt.start_date,
+            'end_date', evt.end_date,
+            'description', COALESCE(evt.description, null),
             'destination', jsonb_build_object(
                 'id', d.id,
                 'name', d.name,
-                'description', d.description,
                 'photo_path', d.photo_path,
                 'speciality', d.speciality,
                 'website', d.website,
                 'phone', d.phone,
                 'address', jsonb_build_object(
                     'id', a.id,
+                    'number', a.street_number,
                     'street', a.street,
-                    'street_number', a.street_number,
                     'city', a.city,
                     'postale_code', a.postale_code,
                     'country', a.country,
@@ -52,12 +52,13 @@ BEGIN
         )
     )
     INTO _events
-    FROM events evt
-    LEFT JOIN public.destinations d ON evt.address_id = d.id
-    LEFT JOIN public.addresses a ON d.address_id = a.id
+    FROM public.events evt
+    LEFT JOIN public.destinations d ON evt.destinations_id = d.id
+    LEFT JOIN public.address a ON d.address_id = a.id
     WHERE evt.organization_id = _organization_id
     AND d.deleted_at IS NULL
-    AND evt.status = 'started';
+    AND evt.status = 'started'
+    AND evt.start_date > NOW();
 
     
     RETURN COALESCE(_events, '[]'::jsonb);

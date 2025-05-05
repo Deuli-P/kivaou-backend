@@ -17,7 +17,7 @@ const sqlFiles = [
     'delete_destination.sql',
     'check_middleware_owner.sql',
     'create_event.sql',
-    'get_all_events_by_organization_id.sql'
+    'get_all_events_active_by_organization_id.sql'
     //'get_organization_events.sql',
     //'get_event_by_id.sql',
     //'update_event.sql',

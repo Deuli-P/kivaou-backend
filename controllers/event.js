@@ -61,13 +61,16 @@ export const createEvent = async (req, res) => {
     }
 };
 
-export const getEvents = async (req, res) => {
+export const getEventActive = async (req, res) => {
 
     try{
         const organization_id = req.query.id;
 
-        const filePathGetEvent = path.join("queries/event/getEvents.sql");
-        const resultGetEvent = await executeQuery(filePathGetEvent, [organization_id]);
+        console.log('start getEventActive for org id :', organization_id);
+
+        const filePathGetEvent = path.join("queries/event/getEventsActive.sql");
+        const resultGetEvent = await executeQuery(filePathGetEvent, [organization_id, req.user.id]);
+
 
         if(resultGetEvent.rowCount === 0){
             return res.status(400).json({
@@ -75,7 +78,7 @@ export const getEvents = async (req, res) => {
             });
         }
 
-        const result = resultGetEvent.rows[0].get_event_by_id;
+        const result = resultGetEvent.rows[0].get_all_events_active_by_organization_id;
 
         return res.status(200).json({
             result
