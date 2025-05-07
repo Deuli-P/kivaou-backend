@@ -27,6 +27,6 @@ BEGIN
     END IF;
 
     -- OK
-    RETURN 204;
+    RETURN 200;
 END;
 $$;

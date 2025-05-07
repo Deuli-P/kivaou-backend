@@ -43,13 +43,15 @@ export const getOrganizations = async (req, res) => {
          
         const result = resultGetOrganizations.rows[0].get_organization_by_id;
 
+        console.log('result', result);
+
         res.status(200).json({
             message: 'Organisations trouvées', 
             users: result.users,
             organization: result.organization_info,
             events: {
                 past : result.past_events,
-                future : result.future_events
+                future : result.events_future
             },
             destinations: result.destinations
 
@@ -58,6 +60,9 @@ export const getOrganizations = async (req, res) => {
     }  
     catch(e){
         console.error(e);
-        return res.status(500).json({ status: 500, message: "Erreur serveur lors de la récupération des organisations" });
+        return res.status(500).json({ 
+            status: 500, 
+            message: "Erreur serveur lors de la récupération des organisations" 
+        });
     }
 };

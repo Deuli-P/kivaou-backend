@@ -55,7 +55,7 @@ BEGIN
     
 
     -- Succès
-    RETURN jsonb_build_object('status', 204, 'message', 'Destination deleted successfully');
+    RETURN jsonb_build_object('status', 200, 'message', 'Destination deleted successfully');
 
 END;
 $$;

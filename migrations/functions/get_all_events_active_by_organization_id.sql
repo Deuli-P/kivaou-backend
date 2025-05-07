@@ -8,30 +8,38 @@ AS $$
 DECLARE
     _events JSONB;
 BEGIN
-    -- Vérifier si l'organisation existe
+    -- Vérifications
     IF NOT EXISTS (SELECT 1 FROM organizations WHERE id = _organization_id) THEN
         RAISE EXCEPTION 'Organization with ID % does not exist', _organization_id;
     END IF;
 
-    -- vérifier si le user existe 
     IF NOT EXISTS (SELECT 1 FROM users WHERE id = _user_id) THEN
         RAISE EXCEPTION 'User with ID % does not exist', _user_id;
     END IF;
 
-    -- Vérifier si le user appartient à l'organisation
-    IF NOT EXISTS (SELECT 1 FROM users WHERE id = _user_id AND organization_id = _organization_id) THEN
+    IF NOT EXISTS (
+        SELECT 1 FROM users 
+        WHERE id = _user_id AND organization_id = _organization_id
+    ) THEN
         RAISE EXCEPTION 'User with ID % does not belong to organization %', _user_id, _organization_id;
     END IF;
 
-    -- Récupérer les events de l'organisation qui sont active ()
-    SELECT jsonb_agg(
-        jsonb_build_object(
-            'id', evt.id,
-            'title', evt.title,
-            'start_date', evt.start_date,
-            'end_date', evt.end_date,
-            'description', COALESCE(evt.description, null),
-            'destination', jsonb_build_object(
+    -- Récupération des événements triés
+    SELECT jsonb_agg(event_data) INTO _events
+    FROM (
+        SELECT 
+            evt.id,
+            evt.title,
+            evt.start_date,
+            evt.end_date,
+            COALESCE(evt.description, NULL) AS description,
+            -- Creator
+            jsonb_build_object(
+                'id', evt.created_by
+            ) AS owner,
+
+            -- Destination
+            jsonb_build_object(
                 'id', d.id,
                 'name', d.name,
                 'photo_path', d.photo_path,
@@ -48,19 +56,39 @@ BEGIN
                     'latitude', a.latitude,
                     'longitude', a.longitude
                 )
-            )
-        )
-    )
-    INTO _events
-    FROM public.events evt
-    LEFT JOIN public.destinations d ON evt.destinations_id = d.id
-    LEFT JOIN public.address a ON d.address_id = a.id
-    WHERE evt.organization_id = _organization_id
-    AND d.deleted_at IS NULL
-    AND evt.status = 'started'
-    AND evt.start_date > NOW();
+            ) AS destination,
 
-    
+            -- Si inscrit
+            EXISTS (
+                SELECT 1 FROM submits s 
+                WHERE s.event_id = evt.id 
+                AND s.user_id = _user_id 
+                AND s.status = 'register'
+            ) AS submitted,
+
+            -- Participants
+            (
+                SELECT jsonb_agg(jsonb_build_object(
+                    'id', u.id,
+                    'firtname', u.firstname,
+                    'lastname',u.lastname,
+                    'photo_path', u.photo_path
+                ))
+                FROM submits s2
+                JOIN users u ON s2.user_id = u.id
+                WHERE s2.event_id = evt.id AND s2.status = 'register'
+            ) AS users
+
+        FROM public.events evt
+        LEFT JOIN public.destinations d ON evt.destinations_id = d.id
+        LEFT JOIN public.address a ON d.address_id = a.id
+        WHERE evt.organization_id = _organization_id
+        AND d.deleted_at IS NULL
+        AND evt.status = 'started'
+        AND evt.start_date::date >= CURRENT_DATE
+        ORDER BY evt.start_date ASC
+    ) AS event_data;
+
     RETURN COALESCE(_events, '[]'::jsonb);
 END;
 $$;
