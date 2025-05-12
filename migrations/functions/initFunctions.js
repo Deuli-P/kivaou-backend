@@ -21,7 +21,8 @@ const sqlFiles = [
     'submit_event.sql',
     'cancel_submit_event.sql',
     'get_event_by_id.sql',
-    //'delete_event.sql'
+    'get_user_info.sql',
+    'delete_event.sql',
 ];
  
 const initFunctions = async () => {
@@ -31,7 +32,6 @@ const initFunctions = async () => {
             console.log('query :', file);
             const filePath = path.join('migrations/functions', file);
             const query = await readFile(filePath, 'utf-8');
-            //console.log(`==> SQL Query from ${file}:\n`, query);
             console.log(' query DONE');
             await pool.query(query);
              

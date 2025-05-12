@@ -10,7 +10,6 @@ export const isMember = async (req, res, next) => {
 
         const id = req.params.id || req.query.id;
 
-        console.log('isMember orga id :', id);
 
         const filePathMiddlewareOrganizations = path.join("queries/middlewares/organization.sql");
         const resultMiddlewareOrganizations = await executeQuery(filePathMiddlewareOrganizations, [user.id, id]);
@@ -38,7 +37,6 @@ export const isOwner = async (req, res,next) => {
 
         const id = req.params.id || req.query.id;
 
-        console.log('isOwner orga id :', id);
 
 
         const filePathMiddlewareOrganizations = path.join("queries/middlewares/owner.sql");

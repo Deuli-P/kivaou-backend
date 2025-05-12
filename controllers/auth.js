@@ -8,7 +8,6 @@ export const getLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        console.log('start login')
 
         if (!email || !password) {
             return res.status(400).json({ status: 400, message: "Veuillez remplir tous les champs" });
@@ -125,11 +124,9 @@ export const getLogout = async (req, res) => {
 
 export const createUser = async (req, res) => {
     try {
-        console.log("createUser");
 
         const { firstname, lastname, email, password, photo_path } = req.body;
 
-        console.log(firstname, lastname, email, password, photo_path);
         // Vérifications de sécurité
         if (!firstname || !lastname || !email || !password) {
             return res.status(400).json({

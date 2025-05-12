@@ -3,7 +3,6 @@ import path from 'path';
 
 export const createEvent = async (req, res) => {
     try{
-        console.log("createEvent");
 
         const { title, description, start_date, end_date, place } = req.body;
         const destination_id = place;
@@ -40,7 +39,6 @@ export const createEvent = async (req, res) => {
         }
         const result = resultCreateEvent.rows[0].create_event;
 
-        console.log('result', result);
 
         res.status(result.status).json(result);
     }
@@ -86,13 +84,52 @@ export const editEvent = async (req, res) => {
 };
 
 export const deleteEvent = async (req, res) => {
+    try{
+        const user = req.user;
+        const event_id = req.params.id;
+        const organization_id = req.query.id;
+
+        if(!event_id || !organization_id){
+            return res.status(400).json({
+                message: 'Erreur lors de la suppression de l\'événement'
+            });
+        }
+
+        const filePathDeleteEvent = path.join("queries/event/deleteEvent.sql");
+        const resultDeleteEvent = await executeQuery(filePathDeleteEvent, [event_id, organization_id, user.id]);
+
+        if(resultDeleteEvent.rowCount === 0){
+            return res.status(400).json({
+                message: 'Erreur lors de la suppression de l\'événement'
+            });
+        }
+
+        const result = resultDeleteEvent.rows[0].delete_event;
+
+        if(result.status === 'success'){
+            return res.status(200).json({
+                message: 'Événement supprimé avec succès'
+            });
+        }
+        else {
+            return res.status(400).json({
+                message: 'Erreur lors de la suppression de l\'événement'
+            });
+        }
+
+    }
+    catch(e){
+        console.error(e);
+        res.status(500).json({
+            message: 'Erreur serveur'
+        });
+    }
 };
 
 export const submitEvent = async (req, res) => {
     try{
         const event_id = req.body.eventId;
 
-        console.log('body :', req.body);
         if(!event_id){
             return res.status(400).json({
                 message: 'Erreur lors de la soumission de l\'événement'
@@ -112,7 +149,6 @@ export const submitEvent = async (req, res) => {
 
         const result = resultSubmitEvent.rows[0].submit_event;
 
-        console.log("result", result);
 
         if(result.status = 'success'){
             return res.status(200).json({ 
@@ -149,7 +185,6 @@ export const cancelSubmitEvent = async (req, res) => {
 
         const result = resultCancelSubmitEvent.rows[0].cancel_submit_event;
 
-        console.log("result", result);
 
         if (result.status === 'success') {
             return res.status(200).json(result);
@@ -188,7 +223,6 @@ export const getEventById = async (req, res) => {
         }
         const result = resultGetEvent.rows[0].get_event_by_id;
 
-        console.log('result', result);
 
         res.status(result.status).json(result);
 

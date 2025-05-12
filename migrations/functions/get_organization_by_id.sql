@@ -50,7 +50,7 @@ BEGIN
                'address', jsonb_build_object(
                    'id', a.id,
                    'street', a.street,
-                   'street_number', a.street_number,
+                   'number', a.street_number,
                    'city', a.city,
                    'postale_code', a.postale_code,
                    'country', a.country,

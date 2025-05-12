@@ -43,7 +43,6 @@ export const getOrganizations = async (req, res) => {
          
         const result = resultGetOrganizations.rows[0].get_organization_by_id;
 
-        console.log('result', result);
 
         res.status(200).json({
             message: 'Organisations trouvées', 
