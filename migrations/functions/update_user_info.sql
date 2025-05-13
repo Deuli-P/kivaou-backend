@@ -16,9 +16,9 @@ BEGIN
 
 
     UPDATE users
-    SET firstname = _firstname,
-        lastname = _lastname,
-        photo_path = _photo_path
+    SET firstname = TRIM(_firstname),
+        lastname = TRIM(_lastname),
+        photo_path = TRIM(_photo_path)
     WHERE id = _user_id;
 
    -- Retourne les nouvelles infos du user

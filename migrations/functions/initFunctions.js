@@ -23,6 +23,8 @@ const sqlFiles = [
     'get_event_by_id.sql',
     'get_user_info.sql',
     'delete_event.sql',
+    'add_user_to_organization.sql',
+    'remove_user_from_organization.sql'
 ];
  
 const initFunctions = async () => {

@@ -1,6 +1,4 @@
-import executeQuery from '../utils/dbReader.js';
-import path from 'path';
-
+import { UserModel } from '../models/UserModel.js';
 
 export const updateUser = async (req, res) => {
     try{
@@ -9,18 +7,18 @@ export const updateUser = async (req, res) => {
 
         const { firstname, lastname, photo_path } = req.body;
 
-        if (!firstname || !lastname) {
+        if (!firstname.trim() || !lastname.trim()) {
             return res.status(400).json({
                 status: 400,
                 message: "Veuillez remplir tous les champs"
             });
         }
-        const filePathUpdateUser = path.join("queries/auth/updateUserInfo.sql");
-        const resultUpdateUser = await executeQuery(filePathUpdateUser, [
+        
+        const resultUpdateUser = await UserModel.updateUserInfo([
             user.id,
-            firstname,
-            lastname,
-            photo_path || null
+            firstname.trim(),
+            lastname.trim(),
+            photo_path.trim() || null
         ]);
         if (resultUpdateUser.rowCount === 0) {
             return res.status(500).json({
@@ -46,10 +44,10 @@ export const getUser = async (req, res) => {
 
         const user = req.user;
 
-        const filePathGetUser = path.join("queries/auth/getUserInfo.sql");
-        const resultGetUser = await executeQuery(filePathGetUser, [
+        const resultGetUser = await UserModel.getUserInfo([
             user.id
         ]);
+
         if (resultGetUser.rowCount === 0) {
             return res.status(500).json({
                 status: 500,
@@ -68,3 +66,4 @@ export const getUser = async (req, res) => {
         res.status(500).json({message: 'Erreur serveur lors de la récupération de l\'utilisateur'});
     }
 };
+

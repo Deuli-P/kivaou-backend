@@ -1,9 +1,9 @@
 CREATE OR REPLACE FUNCTION create_destination(
     _name TEXT,
     _organization_id UUID,
-    _street_number INTEGER,
+    _street_number TEXT,
     _street TEXT,
-    _postale_code INTEGER,
+    _postale_code TEXT,
     _city TEXT,
     _country TEXT,
     _longitude FLOAT,
@@ -53,11 +53,30 @@ BEGIN
         RETURN jsonb_build_object('status', 400, 'message', 'Schedule doit être un tableau JSON');
     END IF;
 
+    -- Vérifier si la destination existe déjà dans cette organisation
+    IF EXISTS (
+        SELECT 1
+        FROM destinations d
+        LEFT JOIN address a ON a.id = d.address_id
+        WHERE 
+            d.organization_id = _organization_id
+            AND LOWER(a.street) = LOWER(TRIM(_street))
+            AND a.street_number = _street_number
+            AND LOWER(a.city) = LOWER(TRIM(_city))
+            AND a.postale_code = _postale_code::TEXT
+            AND d.phone = _phone::TEXT
+    ) THEN
+        RETURN jsonb_build_object(
+            'status', 409,
+            'message', 'La destination existe déjà.'
+        );
+    END IF;
+
     -- Insérer l'adresse
     SELECT public.create_address(
-        _street_number,
+        _street_number::INTEGER,
         _street,
-        _postale_code,
+        _postale_code::INTEGER,
         _city,
         _country,
         _user_id
@@ -78,17 +97,17 @@ BEGIN
         website,
         created_by
     ) VALUES (
-        _name,
+        TRIM(_name),
         _organization_id,
         _address_id,
         _service_type::service_type,
-        _service_link,
+        TRIM(_service_link),
         _schedule,
-        _photo_path,
-        _google_page_link,
-        _speciality,
+        TRIM(_photo_path),
+        TRIM(_google_page_link),
+        TRIM(_speciality),
         _phone,
-        _website,
+        TRIM(_website),
         _user_id
     );
 

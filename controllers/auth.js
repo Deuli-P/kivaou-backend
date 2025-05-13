@@ -1,28 +1,27 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import executeQuery from '../utils/dbReader.js';
-import { regexEmail } from '../utils/utils.js';
-import path from 'path';
+import { regexEmail, regexPassword } from '../utils/utils.js';
+import { UserModel } from '../models/UserModel.js';
+import { AuthModel } from '../models/AuthModel.js';
 
 export const getLogin = async (req, res) => {
     try {
         const { email, password } = req.body;
 
 
-        if (!email || !password) {
+        if (!email.trim() || !password.trim()) {
             return res.status(400).json({ status: 400, message: "Veuillez remplir tous les champs" });
         }
 
-        if (!regexEmail.test(email)) {
+        if (!regexEmail.test(email.trim())) {
             return res.status(400).json({ status: 400, message: "Email incorrect" });
         }
 
-        if(password.length < 6){
+        if(password.trim().length < 6){
             return res.status(400).json({status: 400, message: 'Mot de passe trop court'});
         }
 
-        const filePathGetUser = path.join("queries/auth/getAuthByEmail.sql");
-        const resultGetUser = await executeQuery(filePathGetUser, [email]);
+        const resultGetUser = await AuthModel.getAuthByEmail([email.trim()]);
 
         if (!resultGetUser.rows.length) {
             return res.status(400).json({ status: 400, message: "Mauvais email ou mot de passe" });
@@ -41,13 +40,14 @@ export const getLogin = async (req, res) => {
             return res.status(400).json({ status: 400, message: "Mauvais email ou mot de passe" });
         }
 
-        const filePathGetUserInfo = path.join("queries/auth/getUserInfoByAuthId.sql");
-        const resultGetUserInfo = await executeQuery(filePathGetUserInfo, [authInfo.id]);
+        
+        const resultGetUserInfo = await AuthModel.getUserInfoByAuthId([authInfo.id]);
+
 
         const user = resultGetUserInfo.rows[0].get_user_info_by_auth_id;
 
         if (!user) {
-            return res.status(500).json({ status: 500, message: "Utilisateur introuvable" });
+            return res.status(500).json({ status: 500, message: "Mauvais email ou mot de passe" });
         }
 
         const token = jwt.sign({ id:user.id}, process.env.JWT_SECRET, { expiresIn: 24 * 60 * 60 * 1000 });
@@ -83,8 +83,7 @@ export const getSession = async (req, res) => {
     try{
         const token = req.user;
 
-        const filePathDataUser = path.join("queries/auth/getUserInfoByUserId.sql");
-        const resultGetUserInfo = await executeQuery(filePathDataUser, [token.id]);
+        const resultGetUserInfo = await UserModel.getUserInfoById([token.id]);
 
         const user = resultGetUserInfo.rows[0].get_user_info_by_user_id;
 
@@ -128,40 +127,52 @@ export const createUser = async (req, res) => {
         const { firstname, lastname, email, password, photo_path } = req.body;
 
         // Vérifications de sécurité
-        if (!firstname || !lastname || !email || !password) {
+        if (!firstname.trim() || !lastname.trim() || !email.trim() || !password.trim()) {
             return res.status(400).json({
                 status: 400,
                 message: "Veuillez remplir tous les champs"
             });
         }
 
-        const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!regexEmail.test(email)) {
+        if (!regexEmail.test(email.trim())) {
             return res.status(400).json({
                 status: 400,
                 message: "Email incorrect"
             });
         }
 
-        if (password.length < 6) {
+        if (password.trim().length < 12) {
             return res.status(400).json({
                 status: 400,
                 message: "Mot de passe trop court"
             });
         }
 
+        if (password.trim().length > 200) {
+            return res.status(400).json({
+                status: 400,
+                message: "Mot de passe trop long"
+            });
+        }
+
+
+        if(!regexPassword.test(password.trim())){
+            return res.status(400).json({
+                status: 400,
+                message: "Le mot de passe doit contenir au moins 12 caractères, une lettre et un chiffre et un caractère spécial"
+            });
+        }
 
         // Hachage du mot de passe
-        const hash = await bcrypt.hash(password, 10);
+        const hash = await bcrypt.hash(password.trim(), 10);
 
-        // Appeler la fonction SQL `create_user`
-        const filePathCreateUser = path.join("queries/auth/createUser.sql");
-        const resultCreateUser = await executeQuery(filePathCreateUser, [
-            email,
-            hash,
-            firstname,
-            lastname,
-            photo_path || null
+        
+        const resultCreateUser = await AuthModel.createAuth([
+            email.trim(),
+            hash.trim(),
+            firstname.trim(),
+            lastname.trim(),
+            photo_path.trim() || null
         ]);
 
         if (resultCreateUser.rowCount === 0) {
@@ -187,6 +198,7 @@ export const createUser = async (req, res) => {
             status: 201,
             message: "Utilisateur créé",
             user: {
+                id : user.id,
                 email: user.email,
                 firstname: user.firstname,
                 lastname: user.lastname,

@@ -1,6 +1,4 @@
-import jwt from 'jsonwebtoken';
-import executeQuery from '../utils/dbReader.js';
-import path from 'path';
+import { OrganizationModel } from '../models/OrganizationModel.js';
 
 
 export const isMember = async (req, res, next) => {
@@ -11,8 +9,7 @@ export const isMember = async (req, res, next) => {
         const id = req.params.id || req.query.id;
 
 
-        const filePathMiddlewareOrganizations = path.join("queries/middlewares/organization.sql");
-        const resultMiddlewareOrganizations = await executeQuery(filePathMiddlewareOrganizations, [user.id, id]);
+        const resultMiddlewareOrganizations = await OrganizationModel.organizationMiddlewareMember([user.id, id]);
 
         const resultRow = resultMiddlewareOrganizations.rows[0].check_middleware_organization;
 
@@ -21,6 +18,10 @@ export const isMember = async (req, res, next) => {
                 message: 'Utilisateur non membre de cette organisation ou organisation introuvable'
             }); 
         }
+
+        req.user.organization = {
+            id: id
+        };
         
         next();
 
@@ -39,8 +40,7 @@ export const isOwner = async (req, res,next) => {
 
 
 
-        const filePathMiddlewareOrganizations = path.join("queries/middlewares/owner.sql");
-        const resultMiddlewareOrganizations = await executeQuery(filePathMiddlewareOrganizations, [user.id, id]);
+        const resultMiddlewareOrganizations = await OrganizationModel.organizationMiddlewareOwner([user.id, id]);
 
         const resultRow = resultMiddlewareOrganizations.rows[0].check_middleware_owner;
 
@@ -55,6 +55,11 @@ export const isOwner = async (req, res,next) => {
                 message: 'Utilisateur n\'est pas propriétaire de cette organisation'
             }); 
         }
+
+        req.user.organization = {
+            id: id,
+            role: 'owner'
+        };
         
         next();
 

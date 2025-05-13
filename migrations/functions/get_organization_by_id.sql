@@ -71,12 +71,17 @@ BEGIN
         'firstname', u.firstname,
         'lastname', u.lastname,
         'email', auth.email,
-        'photo_path', u.photo_path
+        'photo_path', u.photo_path,
+        'role', CASE
+            WHEN o.owner_id = u.id THEN 'owner'
+            ELSE 'member'
+        END
     ))
     INTO _users_list
     FROM users u
     LEFT JOIN auth ON auth.id = u.auth_id
-    WHERE u.organization_id = _id AND u.id != _owner_id AND u.id != _user_id;
+    LEFT JOIN organizations o ON o.id = _id
+    WHERE u.organization_id = _id AND u.id != _user_id;
 
     -- Récupérer les événements passés (jusqu'à hier)
      SELECT jsonb_agg(event_data) INTO _events_past

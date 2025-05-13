@@ -4,6 +4,7 @@ CREATE OR REPLACE FUNCTION check_middleware_organization(
 ) 
 RETURNS INTEGER
 LANGUAGE plpgsql
+SECURITY DEFINER
 AS $$
 BEGIN
 

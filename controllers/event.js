@@ -1,5 +1,4 @@
-import executeQuery from '../utils/dbReader.js';
-import path from 'path';
+import { EventModel } from '../models/EventModel.js';
 
 export const createEvent = async (req, res) => {
     try{
@@ -7,9 +6,9 @@ export const createEvent = async (req, res) => {
         const { title, description, start_date, end_date, place } = req.body;
         const destination_id = place;
 
-        const organization_id = req.query.id;
+        const organization_id = req.user.organization.id;
 
-        if(!title || !start_date || !destination_id){
+        if(!title.trim() || !start_date || !destination_id){
             return res.status(400).json({
                 message: 'Veuillez remplir tous les champs obligatoires'
             });
@@ -29,8 +28,7 @@ export const createEvent = async (req, res) => {
         }
 
         
-        const filePathCreateEvent = path.join("queries/event/createEvent.sql");
-        const resultCreateEvent = await executeQuery(filePathCreateEvent, [title, start_date, end_date, destination_id, organization_id, req.user.id, description]);
+        const resultCreateEvent = await EventModel.createEvent([title.trim(), start_date, end_date, destination_id, organization_id, req.user.id, description.trim()]);
 
         if(resultCreateEvent.rowCount === 0){
             return res.status(400).json({
@@ -53,11 +51,9 @@ export const createEvent = async (req, res) => {
 export const getEventActive = async (req, res) => {
 
     try{
-        const organization_id = req.query.id;
+        const organization_id = req.user.organization.id;
 
-        const filePathGetEvent = path.join("queries/event/getEventsActive.sql");
-        const resultGetEvent = await executeQuery(filePathGetEvent, [organization_id, req.user.id]);
-
+        const resultGetEvent = await EventModel.getEvents([organization_id, req.user.id]);
 
         if(resultGetEvent.rowCount === 0){
             return res.status(400).json({
@@ -80,14 +76,12 @@ export const getEventActive = async (req, res) => {
     }
 };
 
-export const editEvent = async (req, res) => {
-};
 
 export const deleteEvent = async (req, res) => {
     try{
         const user = req.user;
         const event_id = req.params.id;
-        const organization_id = req.query.id;
+        const organization_id = req.user.organization.id;
 
         if(!event_id || !organization_id){
             return res.status(400).json({
@@ -95,8 +89,7 @@ export const deleteEvent = async (req, res) => {
             });
         }
 
-        const filePathDeleteEvent = path.join("queries/event/deleteEvent.sql");
-        const resultDeleteEvent = await executeQuery(filePathDeleteEvent, [event_id, organization_id, user.id]);
+        const resultDeleteEvent = await EventModel.deleteEvent([event_id, organization_id, user.id]);
 
         if(resultDeleteEvent.rowCount === 0){
             return res.status(400).json({
@@ -138,8 +131,7 @@ export const submitEvent = async (req, res) => {
 
         const user_id = req.user.id;
 
-        const filePathSubmitEvent = path.join("queries/event/submitEvent.sql");
-        const resultSubmitEvent = await executeQuery(filePathSubmitEvent, [event_id, user_id]);
+        const resultSubmitEvent = await EventModel.submitEvent([event_id, user_id]);
 
         if(resultSubmitEvent.rowCount === 0){
             return res.status(400).json({
@@ -174,8 +166,7 @@ export const cancelSubmitEvent = async (req, res) => {
         const event_id = req.body.eventId;
         const user_id = req.user.id;
 
-        const filePathCancelSubmitEvent = path.join("queries/event/cancelSubmitEvent.sql");
-        const resultCancelSubmitEvent = await executeQuery(filePathCancelSubmitEvent, [event_id, user_id]);
+        const resultCancelSubmitEvent = await EventModel.cancelSubmitEvent([event_id, user_id]);
 
         if(resultCancelSubmitEvent.rowCount === 0){
             return res.status(400).json({
@@ -204,7 +195,7 @@ export const getEventById = async (req, res) => {
     try{
         const { id } = req.params;
         const user_id = req.user.id;
-        const organization_id = req.query.id;
+        const organization_id = req.user.organization.id;
 
         // Check si event_id 
         if(!id || !organization_id){
@@ -213,8 +204,7 @@ export const getEventById = async (req, res) => {
             });
         };
 
-        const filePathGetEvent = path.join("queries/event/createEvent.sql");
-        const resultGetEvent = await executeQuery(filePathGetEvent, [ organization_id, id, user_id]);
+        const resultGetEvent = await EventModel.getEventById([ organization_id, id, user_id]);
 
         if(resultGetEvent.rowCount === 0){
             return res.status(400).json({

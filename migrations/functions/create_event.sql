@@ -31,10 +31,11 @@ BEGIN
 
     -- Vérifier si le user est bien dans l'organisation
     IF NOT EXISTS (
-        SELECT 1 FROM organizations
-        WHERE id = _organization_id AND owner_id = _user_id
+        SELECT 1 FROM organizations o
+        LEFT JOIN users u ON u.id = _user_id
+        WHERE o.id = _organization_id AND u.organization_id = o.id
     ) THEN
-        RETURN jsonb_build_object('status', 403, 'message', 'User is not the owner of the organization');
+        RETURN jsonb_build_object('status', 403, 'message', 'Vous ne pouvez pas faire cela car vous êtes externe à l''organisation');
     END IF;
 
     -- Vérifier si la destination existe
@@ -86,8 +87,8 @@ BEGIN
         status,
         created_by
     ) VALUES (
-        _title,
-        _description,
+        TRIM(_title),
+        TRIM(_description),
         _start_date,
         _end_date,
         _organization_id,
