@@ -89,6 +89,10 @@ BEGIN
         ORDER BY evt.start_date ASC
     ) AS event_data;
 
-    RETURN COALESCE(_events, '[]'::jsonb);
+    RETURN jsonb_build_object(
+        'status',200,
+        'message','OK',
+        'events',COALESCE(_events, '[]'::jsonb)
+    );
 END;
 $$;

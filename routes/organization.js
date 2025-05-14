@@ -8,7 +8,7 @@ const organisationRouter = Router();
 organisationRouter.get('/:id',isConnected, isMember, getOrganizations );
 organisationRouter.post('/create',isConnected, createOrganization);
 organisationRouter.put('/add-user/:email', isConnected, isOwner, addUserToOrganization);
-organisationRouter.post('/remove-user/:userId',isConnected, isOwner, removeUserFromOrganization);
+organisationRouter.delete('/remove-user/:userId',isConnected, isOwner, removeUserFromOrganization);
 
 
 export default organisationRouter;

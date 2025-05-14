@@ -7,24 +7,25 @@ export const createOrganization = async (req, res) => {
 
         const user = req.user;
 
-        const { name , number, street, city, postale_code, country } = req.body;
-        if(!name.trim() || !number.trim() || !street.trim() || !city.trim() || !postal_code.trim() || !country.trim()){
-            res.status(400).json({message: 'Veuillez remplir tous les champs'});
-        }
 
-        const resultCreateOrganization = await OrganizationModel.createOrganization([name.trim(), number.trim(), street.trim(), postale_code.trim(), city.trim(), country.trim(), user.id]);
+        const { name , number, street, city, postale_code, country } = req.body;
+        if(!name.trim() || !number || !street.trim() || !city.trim() || !postale_code || !country.trim()){
+            return res.status(400).json({message: 'Veuillez remplir tous les champs'});
+        };
+
+        const resultCreateOrganization = await OrganizationModel.createOrganization([name.trim(), number, street.trim(), postale_code, city.trim(), country.trim(), user.id]);
 
         if(resultCreateOrganization.rowCount === 0){
-            res.status(400).json({message: 'Erreur lors de la création de l\'organisation'});
+            return res.status(400).json({message: 'Erreur lors de la création de l\'organisation'});
         }
         const result = resultCreateOrganization.rows[0].create_organization;
 
-        res.status(200).json({message: 'Organisation créée', organization: result});
+        return res.status(result.status).json(result);
 
     }  
     catch(e){
         console.error(e);
-        res.status(500).json({ status: 500, message: "Erreur serveur lors de la création de l'organisation" });
+        return res.status(500).json({ status: 500, message: "Erreur serveur lors de la création de l'organisation" });
     }
 }; 
 
@@ -38,7 +39,6 @@ export const getOrganizations = async (req, res) => {
         if(resultGetOrganizations.rowCount === 0){
             res.status(400).json({message: 'Aucune organisation trouvée'});
         }
-
          
         const result = resultGetOrganizations.rows[0].get_organization_by_id;
 
@@ -104,7 +104,7 @@ export const removeUserFromOrganization = async (req, res) => {
     try{
         const user = req.user;
 
-        const { userId } = req.body;
+        const { userId } = req.params;
 
         if(!userId){
             return res.status(400).json({message: 'Erreur lors de la récupération de l\'utilisateur'});

@@ -63,9 +63,7 @@ export const getEventActive = async (req, res) => {
 
         const result = resultGetEvent.rows[0].get_all_events_active_by_organization_id;
 
-        return res.status(200).json({
-            result
-        });
+        return res.status(result.status).json(result);
 
     }
     catch(e){
