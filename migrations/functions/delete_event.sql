@@ -1,6 +1,5 @@
 CREATE OR REPLACE FUNCTION delete_event(
     _event_id UUID,
-    _organization_id UUID,
     _user_id UUID
 )
 RETURNS JSONB
@@ -8,23 +7,34 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     _creator_id UUID;
+    _organization_id UUID;
 BEGIN
-    -- Vérifier si l'utilisateur existe
-    IF NOT EXISTS (SELECT 1 FROM users WHERE id = _user_id) THEN
-        RETURN jsonb_build_object('status', 404, 'message', 'L''utilisateur n''existe pas');
+    --1. Vérifier si l'utilisateur existe
+    IF NOT EXISTS (SELECT 1 FROM users u WHERE u.id = _user_id) THEN
+        RETURN jsonb_build_object(
+            'status', 404, 
+            'message', 'L''utilisateur n''existe pas'
+        );
     END IF;
 
-    -- Vérifier si l'organisation existe
-    IF NOT EXISTS (SELECT 1 FROM organizations WHERE id = _organization_id) THEN
-        RETURN jsonb_build_object('status', 404, 'message', 'L''organisation n''existe pas');
+     -- 2. Vérifier si l'événement existe et récupérer l'organisation associée
+    SELECT organization_id INTO _organization_id
+    FROM events e
+    WHERE e.id = _event_id AND deleted_at IS NULL;
+
+    IF _organization_id IS NULL THEN
+        RETURN jsonb_build_object(
+            'status', 404,
+            'message', 'Événement introuvable'
+        );
     END IF;
 
-    -- Vérifier si l'événement existe et si le user est le créateur
+    -- 3. Vérifier si le user est admin
     IF NOT EXISTS (
         SELECT 1 
-        FROM users
-        LEFT JOIN auth a ON a.id = users.auth_id
-        WHERE id = _user_id AND a.user_type = 'admin'
+        FROM users u
+        LEFT JOIN auth a ON a.id = u.auth_id
+        WHERE u.id = _user_id AND a.user_type = 'admin'
     ) THEN
         RETURN jsonb_build_object(
             'status', 403, 
@@ -32,18 +42,17 @@ BEGIN
         );
     END IF;
 
-    -- Supprimer toutes les participations liées
+    -- 4. Supprimer toutes les participations liées
     DELETE FROM submits s
     WHERE s.event_id = _event_id;
 
-    -- Marquer l'événement comme annulé
-    UPDATE events
-    SET 
-        status = 'deleted'::event_status,
-        deleted_at = CURRENT_TIMESTAMP,
-        deleted_by = _user_id
-    WHERE id = _event_id AND created_by = _user_id;
+    -- 5. Supprimer l'evennt
+    DELETE FROM events e
+    WHERE e.id = _event_id;
 
-    RETURN jsonb_build_object('status', 200, 'message', 'Event cancelled successfully');
+    RETURN jsonb_build_object(
+        'status', 200, 
+        'message', 'Evénement supprimé avec succès'
+    );
 END;
 $$;

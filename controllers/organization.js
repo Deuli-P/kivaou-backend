@@ -36,6 +36,7 @@ export const getOrganization = async (req, res) => {
         const user = req.user;
         const { id } = req.params;
 
+
         const resultGetOrganizations = await OrganizationModel.getOrganization([id, user.id]);
 
         if(resultGetOrganizations.rowCount === 0){

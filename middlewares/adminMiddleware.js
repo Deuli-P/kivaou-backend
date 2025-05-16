@@ -26,10 +26,10 @@ export const isAdmin = async (req, res, next) => {
 
         const result = resultAdmin.rows[0].check_middleware_administrateur;
 
-        if (result.status === 204) {
+        if (result.status === 200) {
             next();
         } else {
-            return res.status(403).json(result);
+            return res.status(result.status).json(result);
         }
 
     }

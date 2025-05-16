@@ -4,16 +4,18 @@ import { OrganizationModel } from '../models/OrganizationModel.js';
 export const isMember = async (req, res, next) => {
     try {
 
-        const {id, organization_id} = req.user;
+        const {id, organization_id, user_type} = req.user;
 
 
-        const organization_id_send = req.params.id || req.query.id;
+        if(user_type === 'admin'){
 
-        if (!organization_id_send || organization_id_send=== 'null' || organization_id_send=== null || !organization_id || organization_id=== 'null' || organization_id=== null || organization_id_send !== organization_id){
+            return next();
+        }
+        if (!organization_id || organization_id=== 'null' || organization_id === null ){
             return res.status(204).end();
         }
 
-        const resultMiddlewareOrganizations = await OrganizationModel.organizationMiddlewareMember([id, organization_id_send]);
+        const resultMiddlewareOrganizations = await OrganizationModel.organizationMiddlewareMember([id, organization_id]);
 
         const result = resultMiddlewareOrganizations.rows[0].check_middleware_organization;
 

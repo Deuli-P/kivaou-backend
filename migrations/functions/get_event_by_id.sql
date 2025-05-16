@@ -1,5 +1,4 @@
 CREATE OR REPLACE FUNCTION get_event_by_id(
-    _organization_id UUID,
     _event_id UUID,
     _user_id UUID
 )
@@ -7,26 +6,36 @@ RETURNS JSONB
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    _event JSONB;
+    _event JSONB;_organization_id UUID;
 BEGIN
-    -- Vérifications
-    IF NOT EXISTS (SELECT 1 FROM organizations WHERE id = _organization_id) THEN
-        RETURN jsonb_build_object(
-            'status', 404,
-            'message', 'Vous ne pouvez faire cela'
-        );
-    END IF;
-
+    -- 1. Vérifier si l'utilisateur existe
     IF NOT EXISTS (SELECT 1 FROM users WHERE id = _user_id) THEN
         RETURN jsonb_build_object(
             'status', 404,
-            'message', 'Vous ne pouvez faire cela'
+            'message', 'Utilisateur introuvable'
         );
     END IF;
 
+    -- 2. Vérifier si l'événement existe et récupérer l'organisation associée
+    SELECT organization_id INTO _organization_id
+    FROM events
+    WHERE id = _event_id AND deleted_at IS NULL;
+
+    IF _organization_id IS NULL THEN
+        RETURN jsonb_build_object(
+            'status', 404,
+            'message', 'Événement introuvable'
+        );
+    END IF;
+
+
+    -- 3. Vérifier si l'utilisateur a accès à l'événement
     IF NOT EXISTS (
-        SELECT 1 FROM users 
-        WHERE id = _user_id AND organization_id = _organization_id
+        SELECT 1 
+        FROM users u
+        LEFT JOIN auth a ON a.id = u.auth_id
+        WHERE u.id = _user_id 
+            AND (u.organization_id = _organization_id OR a.user_type = 'admin')
     ) THEN
        RETURN jsonb_build_object(
             'status', 404,
@@ -34,7 +43,7 @@ BEGIN
         );
     END IF;
 
-    -- Récupération de l'événements
+    -- 4. Récupération de l'événements
      SELECT jsonb_build_object(
         'id', evt.id,
         'title', evt.title,

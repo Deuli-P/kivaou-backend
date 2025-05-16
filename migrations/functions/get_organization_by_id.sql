@@ -29,18 +29,21 @@ BEGIN
         );
     END IF;
 
-    -- Vérifier si l'utilisateur appartient à l'organisation ou est owner
+    -- Vérifier si l'utilisateur appartient à l'organisation ou est owner ou admin
     IF NOT EXISTS (
-        SELECT 1 FROM users
-        WHERE id = _user_id
+        SELECT 1
+        FROM users u
+        LEFT JOIN auth a ON a.id = u.auth_id
+        WHERE u.id = _user_id
         AND (
-            organization_id = _id
+            u.organization_id = _id
             OR _user_id = (SELECT owner_id FROM organizations WHERE id = _id)
+            OR a.user_type = 'admin'
         )
     ) THEN
         RETURN jsonb_build_object(
             'status', 403,
-            'message', 'Vous ne pouvez faire cela'
+            'message', 'Vous ne pouvez pas faire cette action'
         );
     END IF;
 
