@@ -1,5 +1,4 @@
-import executeQuery from '../utils/dbReader.js';
-import path from 'path';
+import { DestinationModel } from '../models/DestinationModel.js';
 
 
 export const getDestinations = async (req, res) => {
@@ -9,11 +8,13 @@ export const getDestinations = async (req, res) => {
 
         const id = req.query.id;
         
-        const filePathGetPlaces = path.join("queries/destination/getDestinations.sql");
-        const resultGetPlaces = await executeQuery(filePathGetPlaces, [id, user.id]);
+        const resultGetPlaces = await DestinationModel.getDestinations([id, user.id]);
 
         if(resultGetPlaces.rowCount === 0){
-            return res.status(400).json({message: 'Erreur lors de la récupération des lieux'});
+            return res.status(400).json({
+                status: 400,
+                message: 'Erreur lors de la récupération des lieux'
+            });
         }
         const result = resultGetPlaces.rows[0].get_destinations;
 
@@ -29,29 +30,38 @@ export const getDestinations = async (req, res) => {
     }
 };
 
-export const createDestionation = async (req, res) => {
+export const createDestination = async (req, res) => {
     try{
         const user = req.user;
 
         const id = req.query.id;
 
-        const { name, number, street, city, postal_code, schedule, country, service_type, website, service_link, google_map, speciality, phone, photo_path, longitude, latitude } = req.body;
+        const { name, number, street, city, postale_code, schedule, country, service_type, website, service_link, google_map, speciality, phone, photo_path, longitude, latitude } = req.body;
 
-        if(!name  || !street || !city || !postal_code || !country || !phone || !service_type || !speciality){
+        if(!name.trim() || !number.trim() || !street.trim() || !city.trim() || !postale_code || !country.trim() || !phone.trim() || !service_type.trim() || !speciality.trim()){
             return res.status(400).json({message: 'Veuillez remplir tous les champs'});
         }
-        const filePathCreateDestination = path.join("queries/destination/createDestination.sql");
-        const resultCreateDestination = await executeQuery(filePathCreateDestination, [name, id, number, street, postal_code, city, country, longitude, latitude, user.id, service_type, service_link, schedule, photo_path, google_map, speciality, phone, website]);
+
+        if (schedule && !Array.isArray(schedule)) {
+            return res.status(400).json({ message: 'Schedule doit être un tableau JSON valide.' });
+          }
+          
+        const jsonSchedule = schedule ? JSON.stringify(schedule) : null;
+
+        const resultCreateDestination = await DestinationModel.createDestination([name.trim(), id, number.trim(), street.trim(), postale_code, city.trim(), country.trim(), longitude?.trim(), latitude?.trim(), user.id, service_type.trim(), service_link?.trim(), jsonSchedule, photo_path?.trim(), google_map?.trim(), speciality.trim(), phone?.trim(), website?.trim()]);
 
         if(resultCreateDestination.rowCount === 0){
-            return res.status(400).json({message: 'Erreur lors de la création du lieu'});
+            return res.status(400).json({
+                status: 400,
+                message: 'Erreur lors de la création du lieu'
+            });
         }
         const result = resultCreateDestination.rows[0].create_destination;
 
-        return res.status(200).json({message: 'Lieu créé', destination: result});
+        return res.status(result.status).json(result);
     }  
     catch(e){
         console.error(e);
         res.status(500).json({ status: 500, message: "Erreur serveur lors de la création du lieu" });
     }
-}
+};

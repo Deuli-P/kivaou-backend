@@ -17,20 +17,45 @@ DECLARE
 BEGIN
     -- Vérifier si l'organisation existe déjà
     IF EXISTS (SELECT 1 FROM organizations WHERE name = _name) THEN
-        RAISE EXCEPTION 'Organization with name % already exists', _name;
+        RETURN jsonb_build_object(
+            'status',400,
+            'message','Vous ne pouvez faire cela'
+        );
     END IF;
 
     -- Vérifier si l'utilisateur existe
     IF NOT EXISTS (SELECT 1 FROM users WHERE id = _owner_id) THEN
-        RAISE EXCEPTION 'User with ID % does not exist', _owner_id;
+        RETURN jsonb_build_object(
+            'status', 400,
+            'message','Vous ne pouvez faire cela'
+            );
     END IF;
 
+  -- Vérifier si l'utilisateur est déjà OWNER ou MEMBRE d'une organisation
+    IF EXISTS (
+        SELECT 1
+        FROM organizations o
+        WHERE o.owner_id = _owner_id
+    )
+    OR EXISTS (
+        SELECT 1
+        FROM users u
+        WHERE u.id = _owner_id AND u.organization_id IS NOT NULL
+    ) THEN
+    RETURN jsonb_build_object(
+        'status', 400,
+        'message','Vous êtes déjà dans une organisation, veuillez la quitter avant d''en créer une nouvelle'
+    );
+    END IF;
     -- Inserer l'adresse dans la table address
     SELECT create_address(_number, _street, _postal_code, _city, _country, _owner_id)
     INTO _address_id;
 
     IF _address_id IS NULL THEN
-        RAISE EXCEPTION 'Address creation failed';
+        RETURN jsonb_build_object(
+            'status', 400,
+            'message','Erreur de creation de l''adresse'
+        );
     END IF;
 
     -- Insérer dans la table organizations 
@@ -39,7 +64,10 @@ BEGIN
     RETURNING id INTO _organization_id;
 
     IF _organization_id IS NULL THEN
-        RAISE EXCEPTION 'Erreur de creation de l''organisation';
+        RETURN jsonb_build_object(
+            'status', 400,
+            'message','Erreur de creation de l''organisation'
+        );
     END IF;
 
     UPDATE users
@@ -67,7 +95,11 @@ BEGIN
     WHERE o.id = _organization_id;
 
     -- Retourner l'objet JSON complet
-    RETURN to_jsonb(_org_record);
+    RETURN jsonb_build_object(
+        'status', 200,
+        'message','Organisation créée avec success',
+        'organization',_org_record
+    );
 
 END;
 $$;

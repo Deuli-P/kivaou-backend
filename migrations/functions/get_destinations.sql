@@ -24,24 +24,14 @@ BEGIN
     END IF;
 
     -- Récupérer les lieux de l'organisation
-    SELECT jsonb_agg(
+     SELECT jsonb_agg(
         jsonb_build_object(
-            'id', d.id,
-            'name', d.name,
-            'photo_path', d.photo_path,
-            'speciality', d.speciality,
-            'address', jsonb_build_object(
-                'street', a.street,
-                'street_number', a.street_number,
-                'city', a.city,
-                'postale_code', a.postale_code,
-                'country', a.country
-            )
+            'value', d.id,
+            'label', d.name
         )
     )
     INTO _places
     FROM destinations d
-    JOIN public.address a ON d.address_id = a.id
     WHERE d.organization_id = _organization_id
       AND d.deleted_at IS NULL;
 

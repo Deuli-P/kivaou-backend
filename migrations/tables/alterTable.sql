@@ -129,3 +129,12 @@ BEGIN
         ALTER TABLE submits ADD CONSTRAINT fk_user_id_submits FOREIGN KEY (user_id) REFERENCES users(id);
     END IF;
 END $$;
+
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.table_constraints WHERE constraint_name = 'unique_event_user') THEN
+        ALTER TABLE submits
+        ADD CONSTRAINT unique_event_user
+        UNIQUE (event_id, user_id);
+    END IF;
+END $$;

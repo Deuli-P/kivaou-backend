@@ -4,8 +4,14 @@ CREATE OR REPLACE FUNCTION check_middleware_organization(
 ) 
 RETURNS INTEGER
 LANGUAGE plpgsql
+SECURITY DEFINER
 AS $$
 BEGIN
+
+    -- Si il n'y a pas de _organization_id, on ne fait rien
+    IF _organization_id IS NULL THEN
+        RETURN 204;
+    END IF;
 
     -- Vérifier si l'utilisateur existe
     IF NOT EXISTS (SELECT 1 FROM users WHERE id = _user_id) THEN
@@ -14,7 +20,7 @@ BEGIN
 
     -- Vérifier si l'organisation existe
     IF NOT EXISTS (SELECT 1 FROM organizations WHERE id = _organization_id) THEN
-        RETURN 404;
+        RETURN 204;
     END IF;
 
     -- Vérifier si l'utilisateur appartient à l'organisation ou est owner
@@ -30,6 +36,7 @@ BEGIN
     END IF;
 
     -- OK
-    RETURN 204;
+    
+    RETURN 200;
 END;
 $$;

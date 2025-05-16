@@ -9,12 +9,12 @@ BEGIN
 
     -- Vérifier si l'utilisateur existe
     IF NOT EXISTS (SELECT 1 FROM users WHERE id = _user_id) THEN
-        RETURN 504;
+        RETURN 404;
     END IF;
 
     -- Vérifier si l'organisation existe
     IF NOT EXISTS (SELECT 1 FROM organizations WHERE id = _organization_id) THEN
-        RETURN 504;
+        RETURN 404;
     END IF;
 
     -- Vérifier si l'utilisateur est le propriétaire de l'organisation
@@ -23,10 +23,10 @@ BEGIN
         WHERE id = _organization_id
         AND owner_id = _user_id
     ) THEN
-        RETURN 404;
+        RETURN 402;
     END IF;
 
     -- OK
-    RETURN 204;
+    RETURN 200;
 END;
 $$;

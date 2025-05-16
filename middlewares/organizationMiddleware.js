@@ -1,29 +1,35 @@
-import jwt from 'jsonwebtoken';
-import executeQuery from '../utils/dbReader.js';
-import path from 'path';
+import { OrganizationModel } from '../models/OrganizationModel.js';
 
 
 export const isMember = async (req, res, next) => {
     try {
 
-        const user = req.user;
+        const {id, organization_id} = req.user;
 
-        const id = req.params.id || req.query.id;
 
-        console.log('isMember orga id :', id);
+        const organization_id_send = req.params.id || req.query.id;
 
-        const filePathMiddlewareOrganizations = path.join("queries/middlewares/organization.sql");
-        const resultMiddlewareOrganizations = await executeQuery(filePathMiddlewareOrganizations, [user.id, id]);
+        if (!organization_id_send || organization_id_send=== 'null' || organization_id_send=== null || !organization_id || organization_id=== 'null' || organization_id=== null || organization_id_send !== organization_id){
+            return res.status(204).end();
+        }
 
-        const resultRow = resultMiddlewareOrganizations.rows[0].check_middleware_organization;
+        const resultMiddlewareOrganizations = await OrganizationModel.organizationMiddlewareMember([id, organization_id_send]);
 
-        if (resultRow === 404) {
+        const result = resultMiddlewareOrganizations.rows[0].check_middleware_organization;
+
+
+        if (result === 404) {
             return res.status(404).json({
                 message: 'Utilisateur non membre de cette organisation ou organisation introuvable'
             }); 
         }
-        
-        next();
+
+        if( result === 200){
+            next();
+        }
+        else{
+            return res.status(204).end();
+        }
 
     } catch (e) {
         console.log('Erreur orgaMiddleware :', e);
@@ -34,31 +40,44 @@ export const isMember = async (req, res, next) => {
 export const isOwner = async (req, res,next) => {
     try {
 
-        const user = req.user;
+        const {id, organization_id} = req.user;
 
-        const id = req.params.id || req.query.id;
+        const organization_id_send = req.params.id || req.query.id;
 
-        console.log('isOwner orga id :', id);
+        if (!organization_id_send || organization_id_send=== 'null' || organization_id_send=== null || !organization_id || organization_id=== 'null' || organization_id=== null){
+            return res.status(204).end();
+        }
+
+        if( organization_id_send !== organization_id){
+            return res.status(403).json({
+                status : 403,
+                message: 'Utilisateur non administrateur de cette organisation'
+            })
+        };
 
 
-        const filePathMiddlewareOrganizations = path.join("queries/middlewares/owner.sql");
-        const resultMiddlewareOrganizations = await executeQuery(filePathMiddlewareOrganizations, [user.id, id]);
+        const resultMiddlewareOrganizations = await OrganizationModel.organizationMiddlewareOwner([id, organization_id_send]);
 
-        const resultRow = resultMiddlewareOrganizations.rows[0].check_middleware_owner;
+        const result = resultMiddlewareOrganizations.rows[0].check_middleware_owner;
 
-        if (resultRow === 504) {
+        if (result === 404) {
             return res.status(404).json({
                 message: 'Utilisateur non membre de cette organisation ou organisation introuvable'
             }); 
         }
 
-        if (resultRow === 404) {
-            return res.status(404).json({
-                message: 'Utilisateur n\'est pas propriétaire de cette organisation'
+        if (result === 402) {
+            return res.status(402).json({
+                message: "Utilisateur n'est pas propriétaire de cette organisation"
             }); 
         }
-        
-        next();
+
+        if( result === 200){
+            next();
+        }
+        else{
+            return res.status(204).end();
+        }
 
     } catch (e) {
         console.log('Erreur orgaMiddleware :', e);
