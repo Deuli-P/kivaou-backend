@@ -11,7 +11,10 @@ export const getDestinations = async (req, res) => {
         const resultGetPlaces = await DestinationModel.getDestinations([id, user.id]);
 
         if(resultGetPlaces.rowCount === 0){
-            return res.status(400).json({message: 'Erreur lors de la récupération des lieux'});
+            return res.status(400).json({
+                status: 400,
+                message: 'Erreur lors de la récupération des lieux'
+            });
         }
         const result = resultGetPlaces.rows[0].get_destinations;
 
@@ -27,15 +30,15 @@ export const getDestinations = async (req, res) => {
     }
 };
 
-export const createDestionation = async (req, res) => {
+export const createDestination = async (req, res) => {
     try{
         const user = req.user;
 
         const id = req.query.id;
 
-        const { name, number, street, city, postal_code, schedule, country, service_type, website, service_link, google_map, speciality, phone, photo_path, longitude, latitude } = req.body;
+        const { name, number, street, city, postale_code, schedule, country, service_type, website, service_link, google_map, speciality, phone, photo_path, longitude, latitude } = req.body;
 
-        if(!name.trim()  || !street.trim() || !city.trim() || !postal_code || !country.trim() || !phone.trim() || !service_type.trim() || !speciality.trim()){
+        if(!name.trim() || !number.trim() || !street.trim() || !city.trim() || !postale_code || !country.trim() || !phone.trim() || !service_type.trim() || !speciality.trim()){
             return res.status(400).json({message: 'Veuillez remplir tous les champs'});
         }
 
@@ -45,10 +48,13 @@ export const createDestionation = async (req, res) => {
           
         const jsonSchedule = schedule ? JSON.stringify(schedule) : null;
 
-        const resultCreateDestination = await DestinationModel.createDestination([name.trim(), id, number, street.trim(), postal_code, city.trim(), country.trim(), longitude?.trim(), latitude?.trim(), user.id, service_type.trim(), service_link?.trim(), jsonSchedule, photo_path?.trim(), google_map?.trim(), speciality.trim(), phone?.trim(), website?.trim()]);
+        const resultCreateDestination = await DestinationModel.createDestination([name.trim(), id, number.trim(), street.trim(), postale_code, city.trim(), country.trim(), longitude?.trim(), latitude?.trim(), user.id, service_type.trim(), service_link?.trim(), jsonSchedule, photo_path?.trim(), google_map?.trim(), speciality.trim(), phone?.trim(), website?.trim()]);
 
         if(resultCreateDestination.rowCount === 0){
-            return res.status(400).json({message: 'Erreur lors de la création du lieu'});
+            return res.status(400).json({
+                status: 400,
+                message: 'Erreur lors de la création du lieu'
+            });
         }
         const result = resultCreateDestination.rows[0].create_destination;
 

@@ -32,4 +32,9 @@ export class EventModel{
         const filePathGetEvent = path.join("queries/event/getEventById.sql");
         return await executeQuery(filePathGetEvent, values);
     }
+
+    static async cancelEvent(values) {
+        const filePathCancelEvent = path.join("queries/event/cancelEvent.sql");
+        return await executeQuery(filePathCancelEvent, values);
+    }
 }

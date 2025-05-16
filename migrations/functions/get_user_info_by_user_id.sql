@@ -15,6 +15,7 @@ BEGIN
         'lastname', u.lastname,
         'email', auth.email,
         'photo_path', u.photo_path,
+        'user_type', auth.user_type,
         'organization', json_build_object(
             'id', org.id,
             'name', org.name,

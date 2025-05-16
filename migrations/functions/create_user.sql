@@ -16,14 +16,14 @@ BEGIN
     -- Check si l'email n'est pas déjà utilisé
     IF EXISTS (SELECT 1 FROM auth WHERE email = _email) THEN
         RETURN jsonb_build_object(
-            'status', 'error',
-            'message', 'Creating user failed'
+            'status', 404,
+            'message', 'Erreur serveur lors de la création de l''utilisateur'
         );
     END IF;
 
     -- Insérer dans la table auth et récupérer l'ID généré
-    INSERT INTO auth (email, password)
-    VALUES (_email, _password)
+    INSERT INTO auth (email, password, user_type)
+    VALUES (_email, _password, 'user')
     RETURNING id INTO _auth_id;
 
     -- Insérer dans la table users avec l'ID récupéré
@@ -32,11 +32,16 @@ BEGIN
     RETURNING id INTO _user_id;
 
     RETURN jsonb_build_object(
-        'id', _user_id,
-        'email', _email,
-        'firstname', _firstname,
-        'lastname', _lastname,
-        'photo_path', _photo_path
+        'status', 200,
+        'message', 'Utilisateur créé avec succès',
+        'user', jsonb_build_object(
+            'id', _user_id,
+            'email', _email,
+            'user_type', 'user',
+            'firstname', _firstname,
+            'lastname', _lastname,
+            'photo_path', _photo_path
+        )   
     );
 END;
 $$;

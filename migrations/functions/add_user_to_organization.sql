@@ -43,7 +43,10 @@ BEGIN
         SELECT 1 FROM users
         WHERE id = _target_user_id AND organization_id IS NOT NULL
     ) THEN
-        RETURN jsonb_build_object('status', 409, 'message', 'Email invalide');
+        RETURN jsonb_build_object(
+            'status', 409, 
+            'message', 'L''utilisateur est déjà dans une autre organisation'
+        );
     END IF;
 
     -- Vérifier si l'utilisateur courant est OWNER de l'organisation

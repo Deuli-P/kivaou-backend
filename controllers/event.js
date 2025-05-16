@@ -6,14 +6,13 @@ export const createEvent = async (req, res) => {
         const { title, description, start_date, end_date, place } = req.body;
         const destination_id = place;
 
-        const organization_id = req.user.organization.id;
+        const organization_id = req.user.organization_id;
 
         if(!title.trim() || !start_date || !destination_id){
             return res.status(400).json({
                 message: 'Veuillez remplir tous les champs obligatoires'
             });
         };
-
 
         if (new Date(start_date) < new Date()) {
             return res.status(400).json({
@@ -32,6 +31,7 @@ export const createEvent = async (req, res) => {
 
         if(resultCreateEvent.rowCount === 0){
             return res.status(400).json({
+                status: 400,
                 message: 'Erreur lors de la création de l\'événement'
             });
         }
@@ -51,12 +51,13 @@ export const createEvent = async (req, res) => {
 export const getEventActive = async (req, res) => {
 
     try{
-        const organization_id = req.user.organization.id;
+        const {id:user_id , organization_id} = req.user;
 
-        const resultGetEvent = await EventModel.getEvents([organization_id, req.user.id]);
+        const resultGetEvent = await EventModel.getEvents([organization_id, user_id]);
 
         if(resultGetEvent.rowCount === 0){
             return res.status(400).json({
+                status: 400,
                 message: 'Aucun événement trouvé'
             });
         }
@@ -74,23 +75,65 @@ export const getEventActive = async (req, res) => {
     }
 };
 
-
-export const deleteEvent = async (req, res) => {
+export const cancelEvent = async (req, res) => {
     try{
-        const user = req.user;
-        const event_id = req.params.id;
-        const organization_id = req.user.organization.id;
+        const user_id = req.user.id;
+        const event_id = req.params.eventId;
+        const organization_id = req.user.organization_id;
+        const organization_role = req.user.organization_role;
 
         if(!event_id || !organization_id){
             return res.status(400).json({
-                message: 'Erreur lors de la suppression de l\'événement'
+                message: 'Erreur lors de l\'annulation de l\'événement'
             });
         }
 
-        const resultDeleteEvent = await EventModel.deleteEvent([event_id, organization_id, user.id]);
+        if(organization_role !== 'OWNER'){
+            return res.status(403).json({
+                message: 'Vous n\'avez pas les droits nécessaires pour annuler cet événement'
+            });
+        }
+
+        const resultCancelEvent = await EventModel.cancelEvent([event_id, organization_id, user_id]);
+
+        if(resultCancelEvent.rowCount === 0){
+            return res.status(400).json({
+                status: 400,
+                message: 'Erreur lors de l\'annulation de l\'événement'
+            });
+        }
+
+        const result = resultCancelEvent.rows[0].cancel_event;
+
+        return res.status(result.status).json(result);
+
+    }
+    catch(e){
+        console.error(e);
+        res.status(500).json({
+            message: 'Erreur serveur'
+        });
+    }
+};
+
+export const deleteEvent = async (req, res) => {
+    try{
+        const user_id = req.user.id;
+        const event_id = req.params.eventId;
+        const organization_id = req.user.organization_id;
+
+        if(!event_id || !organization_id){
+            return res.status(400).json({
+                message: 'Erreur lors de l\'annulation de l\'événement'
+            });
+        }
+
+
+        const resultDeleteEvent = await EventModel.deleteEvent([event_id, organization_id, user_id]);
 
         if(resultDeleteEvent.rowCount === 0){
             return res.status(400).json({
+                status: 400,
                 message: 'Erreur lors de la suppression de l\'événement'
             });
         }
@@ -133,6 +176,7 @@ export const submitEvent = async (req, res) => {
 
         if(resultSubmitEvent.rowCount === 0){
             return res.status(400).json({
+                status: 400,
                 message: 'Erreur lors de la soumission de l\'événement'
             });
         }
@@ -168,6 +212,7 @@ export const cancelSubmitEvent = async (req, res) => {
 
         if(resultCancelSubmitEvent.rowCount === 0){
             return res.status(400).json({
+                status: 400,
                 message: 'Erreur lors de l\'annulation de la soumission de l\'événement'
             });
         }
@@ -191,26 +236,27 @@ export const cancelSubmitEvent = async (req, res) => {
 
 export const getEventById = async (req, res) => {
     try{
-        const { id } = req.params;
+
+        const { eventId } = req.params;
         const user_id = req.user.id;
-        const organization_id = req.user.organization.id;
+        const organization_id = req.user.organization_id;
 
         // Check si event_id 
-        if(!id || !organization_id){
+        if(!eventId || eventId === 'null' || eventId === null){
             return res.status(400).json({
                 message: 'Erreur lors de la récupération de l\'événement'
             });
         };
 
-        const resultGetEvent = await EventModel.getEventById([ organization_id, id, user_id]);
+        const resultGetEvent = await EventModel.getEventById([ organization_id, eventId, user_id]);
 
         if(resultGetEvent.rowCount === 0){
             return res.status(400).json({
+                status:'400',
                 message: 'Erreur lors de la création de l\'événement'
             });
         }
         const result = resultGetEvent.rows[0].get_event_by_id;
-
 
         res.status(result.status).json(result);
 

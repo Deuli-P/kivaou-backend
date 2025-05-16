@@ -11,18 +11,27 @@ DECLARE
 BEGIN
     -- Vérifications
     IF NOT EXISTS (SELECT 1 FROM organizations WHERE id = _organization_id) THEN
-        RAISE EXCEPTION 'Organization with ID % does not exist', _organization_id;
+        RETURN jsonb_build_object(
+            'status', 404,
+            'message', 'Vous ne pouvez faire cela'
+        );
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM users WHERE id = _user_id) THEN
-        RAISE EXCEPTION 'User with ID % does not exist', _user_id;
+        RETURN jsonb_build_object(
+            'status', 404,
+            'message', 'Vous ne pouvez faire cela'
+        );
     END IF;
 
     IF NOT EXISTS (
         SELECT 1 FROM users 
         WHERE id = _user_id AND organization_id = _organization_id
     ) THEN
-        RAISE EXCEPTION 'User with ID % does not belong to organization %', _user_id, _organization_id;
+       RETURN jsonb_build_object(
+            'status', 404,
+            'message', 'Vous ne pouvez faire cela'
+        );
     END IF;
 
     -- Récupération de l'événements
@@ -61,6 +70,10 @@ BEGIN
             AND s.user_id = _user_id 
             AND s.status = 'register'
         ),
+        -- Creator
+        'owner',jsonb_build_object(
+            'id', evt.created_by
+        ),
 
         -- Participants
         'users', (
@@ -72,7 +85,7 @@ BEGIN
             ))
             FROM submits s2
             JOIN users u ON s2.user_id = u.id
-            WHERE s2.event_id = evt.id
+            WHERE s2.event_id = evt.id and s2.status = 'register'
         )
     ) INTO _event
     FROM events evt
@@ -83,7 +96,10 @@ BEGIN
       AND d.deleted_at IS NULL
       AND evt.status = 'started';
 
-    RETURN COALESCE(_event, '{}'::jsonb);
+    RETURN jsonb_build_object(
+        'status',200,
+        'event',COALESCE(_event, '{}'::jsonb)
+    );
 
 END;
 $$;

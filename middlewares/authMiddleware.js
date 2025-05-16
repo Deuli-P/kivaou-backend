@@ -16,6 +16,7 @@ export const isConnected = async (req, res, next) => {
             req.session.destroy();
             return res.status(401).json({message: 'Vous n\'êtes pas connecté'});
         }
+
         req.user = token;
         next();
     }

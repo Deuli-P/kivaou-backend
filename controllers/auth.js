@@ -14,7 +14,7 @@ export const getLogin = async (req, res) => {
         }
 
         if (!regexEmail.test(email.trim())) {
-            return res.status(400).json({ status: 400, message: "Email incorrect" });
+            return res.status(400).json({ status: 400, message: "Format de l'email est incorrect" });
         }
 
         if(password.trim().length < 6){
@@ -44,33 +44,24 @@ export const getLogin = async (req, res) => {
         const resultGetUserInfo = await AuthModel.getUserInfoByAuthId([authInfo.id]);
 
 
-        const user = resultGetUserInfo.rows[0].get_user_info_by_auth_id;
+        const result = resultGetUserInfo.rows[0].get_user_info_by_auth_id;
 
-        if (!user) {
+        if (!result) {
             return res.status(500).json({ status: 500, message: "Mauvais email ou mot de passe" });
         }
 
-        const token = jwt.sign({ id:user.id}, process.env.JWT_SECRET, { expiresIn: 24 * 60 * 60 * 1000 });
+        const user = result.user_info
+
+        const token = jwt.sign({ 
+            id:user.id,
+            user_type: user.user_type,
+            organization_id: user.organization?.id || null,
+            organization_role: user.organization?.role || null
+        }, process.env.JWT_SECRET, { expiresIn: 24 * 60 * 60 * 1000 });
 
         req.session.token = token;
 
-        res.status(200).json({
-            status: 200,
-            success: true,
-            message: "Connexion réussie",
-            user :{
-                firstname: user.firstname,
-                lastname: user.lastname,
-                email: user.email,
-                photo_path: user.photo_path,
-                organization: {
-                    id: user.organization.id,
-                    name: user.organization.name,
-                    role: user.organization.role
-                }
-            },
-            token: token
-        });
+        res.status(result.status).json(result);
 
     } catch (e) {
         console.error(e);
@@ -96,7 +87,6 @@ export const getSession = async (req, res) => {
             status: 200,
             success: true,
             user: user,
-            token: token
         });
     }
     catch(e){
@@ -137,7 +127,7 @@ export const createUser = async (req, res) => {
         if (!regexEmail.test(email.trim())) {
             return res.status(400).json({
                 status: 400,
-                message: "Email incorrect"
+                message: "Format de l'email est incorrect"
             });
         }
 
@@ -182,29 +172,28 @@ export const createUser = async (req, res) => {
             });
         }
 
-        const user = resultCreateUser.rows[0].create_user;
-        if (!user || !user.id) {
+
+        const result = resultCreateUser.rows[0].create_user;
+
+        if (!result) {
             return res.status(500).json({
                 status: 500,
                 message: "Erreur serveur lors de la création de l'utilisateur"
             });
         }
+
+        const user = result.user;
         
-        const token = jwt.sign({ id:user.id}, process.env.JWT_SECRET, { expiresIn: "24h" });
+        const token = jwt.sign({ 
+            id:user.id, 
+            user_type: user.user_type,
+            organization_id: user.organization?.id || null,
+            organization_role: user.organization?.role || null
+        }, process.env.JWT_SECRET, { expiresIn: "24h" });
 
         req.session.token = token;
   
-        res.status(201).json({
-            status: 201,
-            message: "Utilisateur créé",
-            user: {
-                id : user.id,
-                email: user.email,
-                firstname: user.firstname,
-                lastname: user.lastname,
-                photo_path: user.photo_path
-            }
-        });
+        res.status(result.status).json(result);
 
     } catch (e) {
         console.error("createUser :", e);

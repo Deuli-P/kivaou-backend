@@ -1,23 +1,19 @@
-import { type } from 'os';
 import { OrganizationModel } from '../models/OrganizationModel.js';
 
 
 export const isMember = async (req, res, next) => {
     try {
 
-        const user = req.user;
-
-        console.log('start orgaMiddleware');
+        const {id, organization_id} = req.user;
 
 
-        const id= req.params.id || req.query.id;
+        const organization_id_send = req.params.id || req.query.id;
 
-
-        if (!id || id=== 'null' || id === null) {
+        if (!organization_id_send || organization_id_send=== 'null' || organization_id_send=== null || !organization_id || organization_id=== 'null' || organization_id=== null || organization_id_send !== organization_id){
             return res.status(204).end();
         }
 
-        const resultMiddlewareOrganizations = await OrganizationModel.organizationMiddlewareMember([user.id, id]);
+        const resultMiddlewareOrganizations = await OrganizationModel.organizationMiddlewareMember([id, organization_id_send]);
 
         const result = resultMiddlewareOrganizations.rows[0].check_middleware_organization;
 
@@ -29,10 +25,6 @@ export const isMember = async (req, res, next) => {
         }
 
         if( result === 200){
-            req.user.organization = {
-                id: id
-            };
-    
             next();
         }
         else{
@@ -40,7 +32,6 @@ export const isMember = async (req, res, next) => {
         }
 
     } catch (e) {
-        console.log("==============================================")
         console.log('Erreur orgaMiddleware :', e);
         return res.status(500).json({ message: 'Erreur serveur' });
     }
@@ -49,16 +40,23 @@ export const isMember = async (req, res, next) => {
 export const isOwner = async (req, res,next) => {
     try {
 
-        const user = req.user;
+        const {id, organization_id} = req.user;
 
-        const id = req.params.id || req.query.id;
+        const organization_id_send = req.params.id || req.query.id;
 
-
-        if(!id || id === 'null' || id === null ){
-            return res.status(204).end()
+        if (!organization_id_send || organization_id_send=== 'null' || organization_id_send=== null || !organization_id || organization_id=== 'null' || organization_id=== null){
+            return res.status(204).end();
         }
 
-        const resultMiddlewareOrganizations = await OrganizationModel.organizationMiddlewareOwner([user.id, id]);
+        if( organization_id_send !== organization_id){
+            return res.status(403).json({
+                status : 403,
+                message: 'Utilisateur non administrateur de cette organisation'
+            })
+        };
+
+
+        const resultMiddlewareOrganizations = await OrganizationModel.organizationMiddlewareOwner([id, organization_id_send]);
 
         const result = resultMiddlewareOrganizations.rows[0].check_middleware_owner;
 
@@ -75,20 +73,11 @@ export const isOwner = async (req, res,next) => {
         }
 
         if( result === 200){
-            req.user.organization = {
-                id: id,
-                role: 'owner'
-            };
-    
             next();
         }
-
-        req.user.organization = {
-            id: id,
-            role: 'owner'
-        };
-        
-        next();
+        else{
+            return res.status(204).end();
+        }
 
     } catch (e) {
         console.log('Erreur orgaMiddleware :', e);

@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION delete_event(
+CREATE OR REPLACE FUNCTION cancel_event(
     _event_id UUID,
     _organization_id UUID,
     _user_id UUID
@@ -11,27 +11,30 @@ DECLARE
 BEGIN
     -- Vérifier si l'utilisateur existe
     IF NOT EXISTS (SELECT 1 FROM users WHERE id = _user_id) THEN
-        RETURN jsonb_build_object('status', 404, 'message', 'L''utilisateur n''existe pas');
+        RETURN jsonb_build_object(
+            'status', 404, 
+            'message', 'Vous ne pouvez faire cette action'
+        );
     END IF;
 
     -- Vérifier si l'organisation existe
     IF NOT EXISTS (SELECT 1 FROM organizations WHERE id = _organization_id) THEN
-        RETURN jsonb_build_object('status', 404, 'message', 'L''organisation n''existe pas');
-    END IF;
-
-    -- Vérifier si l'événement existe et si le user est le créateur
-    IF NOT EXISTS (
-        SELECT 1 
-        FROM users
-        LEFT JOIN auth a ON a.id = users.auth_id
-        WHERE id = _user_id AND a.user_type = 'admin'
-    ) THEN
         RETURN jsonb_build_object(
-            'status', 403, 
-            'message', 'Vous ne pouvez pas faire cette action'
+            'status', 404, 
+            'message', 'Vous ne pouvez faire cette action'
         );
     END IF;
 
+    -- Vérifier si l'utilisateur est le owner de l'organisation
+    IF NOT EXISTS (
+        SELECT 1 FROM organizations
+        WHERE id = _organization_id AND owner_id = _user_id
+    ) THEN
+        RETURN jsonb_build_object(
+            'status', 403, 
+            'message', 'Vous ne pouvez faire cette action'
+        );
+    END IF;
     -- Supprimer toutes les participations liées
     DELETE FROM submits s
     WHERE s.event_id = _event_id;
@@ -39,11 +42,14 @@ BEGIN
     -- Marquer l'événement comme annulé
     UPDATE events
     SET 
-        status = 'deleted'::event_status,
+        status = 'cancelled'::event_status,
         deleted_at = CURRENT_TIMESTAMP,
         deleted_by = _user_id
     WHERE id = _event_id AND created_by = _user_id;
 
-    RETURN jsonb_build_object('status', 200, 'message', 'Event cancelled successfully');
+    RETURN jsonb_build_object(
+        'status', 200, 
+        'message', 'Event cancelled successfully'
+    );
 END;
 $$;

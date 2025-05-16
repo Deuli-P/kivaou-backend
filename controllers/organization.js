@@ -7,7 +7,6 @@ export const createOrganization = async (req, res) => {
 
         const user = req.user;
 
-
         const { name , number, street, city, postale_code, country } = req.body;
         if(!name.trim() || !number || !street.trim() || !city.trim() || !postale_code || !country.trim()){
             return res.status(400).json({message: 'Veuillez remplir tous les champs'});
@@ -16,7 +15,10 @@ export const createOrganization = async (req, res) => {
         const resultCreateOrganization = await OrganizationModel.createOrganization([name.trim(), number, street.trim(), postale_code, city.trim(), country.trim(), user.id]);
 
         if(resultCreateOrganization.rowCount === 0){
-            return res.status(400).json({message: 'Erreur lors de la création de l\'organisation'});
+            return res.status(400).json({
+                status: 400,
+                message: 'Erreur lors de la création de l\'organisation'
+            });
         }
         const result = resultCreateOrganization.rows[0].create_organization;
 
@@ -29,7 +31,7 @@ export const createOrganization = async (req, res) => {
     }
 }; 
 
-export const getOrganizations = async (req, res) => {
+export const getOrganization = async (req, res) => {
     try{
         const user = req.user;
         const { id } = req.params;
@@ -37,23 +39,16 @@ export const getOrganizations = async (req, res) => {
         const resultGetOrganizations = await OrganizationModel.getOrganization([id, user.id]);
 
         if(resultGetOrganizations.rowCount === 0){
-            res.status(400).json({message: 'Aucune organisation trouvée'});
+            res.status(400).json({
+                status: 400,
+                message: 'Aucune organisation trouvée'
+            });
         }
          
         const result = resultGetOrganizations.rows[0].get_organization_by_id;
 
 
-        res.status(200).json({
-            message: 'Organisations trouvées', 
-            users: result.users,
-            organization: result.organization_info,
-            events: {
-                past : result.past_events,
-                future : result.events_future
-            },
-            destinations: result.destinations
-
-        });
+        res.status(result.status).json(result);
 
     }  
     catch(e){
@@ -70,15 +65,13 @@ export const addUserToOrganization = async (req, res) => {
         const user = req.user;
 
         const { email } = req.params;
-
-        console.log('stat add user to org', email);
+        
+        const organization_id = req.user.organization_id;
         
         if(!email.trim() || !regexEmail.test(email.trim())){
             return res.status(400).json({message: 'Email invalide'});
         }
 
-
-        const organization_id = req.user.organization.id;
 
         const resultAddUserToOrganization = await OrganizationModel.addUserToOrganization([email, organization_id, user.id]);
 
@@ -110,7 +103,7 @@ export const removeUserFromOrganization = async (req, res) => {
             return res.status(400).json({message: 'Erreur lors de la récupération de l\'utilisateur'});
         };
 
-        const organization_id = req.user.organization.id;
+        const organization_id = req.user.organization_id;
 
         const resultRemoveUserFromOrganization = await OrganizationModel.removeUserFromOrganization([userId, organization_id, user.id]);
 

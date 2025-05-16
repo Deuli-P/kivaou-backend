@@ -15,12 +15,18 @@ DECLARE
 BEGIN
     -- Vérifier si l'organisation existe
     IF NOT EXISTS (SELECT 1 FROM organizations WHERE id = _id) THEN
-        RAISE EXCEPTION 'Organization with ID % does not exist', _id;
+        RETURN jsonb_build_object(
+            'status', 403,
+            'message', 'Vous ne pouvez faire cela'
+        );
     END IF;
 
     -- Vérifier si l'utilisateur existe
     IF NOT EXISTS (SELECT 1 FROM users WHERE id = _user_id) THEN
-        RAISE EXCEPTION 'User with ID % does not exist', _user_id;
+        RETURN jsonb_build_object(
+            'status', 403,
+            'message', 'Vous ne pouvez faire cela'
+        );
     END IF;
 
     -- Vérifier si l'utilisateur appartient à l'organisation ou est owner
@@ -32,7 +38,10 @@ BEGIN
             OR _user_id = (SELECT owner_id FROM organizations WHERE id = _id)
         )
     ) THEN
-        RAISE EXCEPTION 'User with ID % is not part of the organization or is not the owner', _user_id;
+        RETURN jsonb_build_object(
+            'status', 403,
+            'message', 'Vous ne pouvez faire cela'
+        );
     END IF;
 
 
@@ -246,10 +255,14 @@ BEGIN
 
     -- Retourner le JSON global
     RETURN jsonb_build_object(
-        'organization_info', _org_record,
+        'status', 200,
+        'message', 'Organization trouvée',
+        'organization', _org_record,
         'users', COALESCE(_users_list, '[]'::jsonb),
-        'events_past', COALESCE(_events_past, '[]'::jsonb),
-        'events_future', COALESCE(_events_future, '[]'::jsonb),
+        'events', jsonb_build_object(
+            'past', COALESCE(_events_past, '[]'::jsonb),
+            'future', COALESCE(_events_future, '[]'::jsonb)
+        ),
         'destinations', COALESCE(_destinations_list, '[]'::jsonb)
     );
 END;
