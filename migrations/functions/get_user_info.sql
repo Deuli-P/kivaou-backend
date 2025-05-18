@@ -28,6 +28,7 @@ BEGIN
             'lastname', u.lastname,
             'email', a.email,
             'photo_path', u.photo_path,
+            'user_type', a.user_type,
             'organization', jsonb_build_object(
                 'id', NULL,
                 'name', NULL,
@@ -60,6 +61,7 @@ BEGIN
         'lastname', u.lastname,
         'email', a.email,
         'photo_path', u.photo_path,
+        'user_type', a.user_type,
         'organization', jsonb_build_object(
             'id', o.id,
             'name', o.name,

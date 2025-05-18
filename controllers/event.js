@@ -116,50 +116,6 @@ export const cancelEvent = async (req, res) => {
     }
 };
 
-export const deleteEvent = async (req, res) => {
-    try{
-        const user_id = req.user.id;
-        const event_id = req.params.eventId;
-        const organization_id = req.user.organization_id;
-
-        if(!event_id || !organization_id){
-            return res.status(400).json({
-                message: 'Erreur lors de l\'annulation de l\'événement'
-            });
-        }
-
-
-        const resultDeleteEvent = await EventModel.deleteEvent([event_id, organization_id, user_id]);
-
-        if(resultDeleteEvent.rowCount === 0){
-            return res.status(400).json({
-                status: 400,
-                message: 'Erreur lors de la suppression de l\'événement'
-            });
-        }
-
-        const result = resultDeleteEvent.rows[0].delete_event;
-
-        if(result.status === 'success'){
-            return res.status(200).json({
-                message: 'Événement supprimé avec succès'
-            });
-        }
-        else {
-            return res.status(400).json({
-                message: 'Erreur lors de la suppression de l\'événement'
-            });
-        }
-
-    }
-    catch(e){
-        console.error(e);
-        res.status(500).json({
-            message: 'Erreur serveur'
-        });
-    }
-};
-
 export const submitEvent = async (req, res) => {
     try{
         const event_id = req.body.eventId;
@@ -236,35 +192,32 @@ export const cancelSubmitEvent = async (req, res) => {
 
 export const getEventById = async (req, res) => {
     try{
-
         const { eventId } = req.params;
         const user_id = req.user.id;
-        const organization_id = req.user.organization_id;
 
         // Check si event_id 
         if(!eventId || eventId === 'null' || eventId === null){
             return res.status(400).json({
-                message: 'Erreur lors de la récupération de l\'événement'
+                message: "Erreur lors de la récupération de l'événement"
             });
         };
 
-        const resultGetEvent = await EventModel.getEventById([ organization_id, eventId, user_id]);
+        const resultGetEvent = await EventModel.getEventById([eventId, user_id]);
 
         if(resultGetEvent.rowCount === 0){
             return res.status(400).json({
                 status:'400',
-                message: 'Erreur lors de la création de l\'événement'
+                message: "Erreur lors de la création de l'événement"
             });
         }
         const result = resultGetEvent.rows[0].get_event_by_id;
-
         res.status(result.status).json(result);
 
     }
     catch(e){
         console.error(e);
         res.status(500).json({
-            message: 'Erreur serveur'
+            message: "Erreur serveur"
         });
     }
 };

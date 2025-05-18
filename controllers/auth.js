@@ -172,28 +172,32 @@ export const createUser = async (req, res) => {
             });
         }
 
-
         const result = resultCreateUser.rows[0].create_user;
 
-        if (!result) {
+
+        if (!result.user) {
             return res.status(500).json({
                 status: 500,
                 message: "Erreur serveur lors de la création de l'utilisateur"
             });
         }
 
-        const user = result.user;
         
-        const token = jwt.sign({ 
-            id:user.id, 
-            user_type: user.user_type,
-            organization_id: user.organization?.id || null,
-            organization_role: user.organization?.role || null
-        }, process.env.JWT_SECRET, { expiresIn: "24h" });
+        if(result.status === 200){
+            const user = result.user;
 
-        req.session.token = token;
+            const token = jwt.sign({ 
+                id:user.id, 
+                user_type: user.user_type,
+                organization_id: user.organization?.id || null,
+                organization_role: user.organization?.role || null
+            }, process.env.JWT_SECRET, { expiresIn: "24h" });
+
+            req.session.token = token;
   
-        res.status(result.status).json(result);
+        }
+
+            return res.status(result.status).json(result);
 
     } catch (e) {
         console.error("createUser :", e);

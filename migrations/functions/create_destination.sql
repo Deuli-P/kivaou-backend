@@ -61,7 +61,7 @@ BEGIN
         WHERE 
             d.organization_id = _organization_id
             AND LOWER(a.street) = LOWER(TRIM(_street))
-            AND a.street_number = _street_number
+            AND a.street_number = TRIM(_street_number)
             AND LOWER(a.city) = LOWER(TRIM(_city))
             AND a.postale_code = _postale_code::TEXT
             AND d.phone = _phone::TEXT
@@ -74,7 +74,7 @@ BEGIN
 
     -- Insérer l'adresse
     SELECT public.create_address(
-        _street_number::INTEGER,
+        _street_number,
         _street,
         _postale_code::INTEGER,
         _city,

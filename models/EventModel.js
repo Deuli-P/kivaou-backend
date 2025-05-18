@@ -13,11 +13,6 @@ export class EventModel{
         return await executeQuery(filePathGetEvents, values);
     }
 
-    static async deleteEvent(values) {
-        const filePathDeleteEvent = path.join("queries/event/deleteEvent.sql");
-        return await executeQuery(filePathDeleteEvent, values);
-    }
-
     static async submitEvent(values) {
         const filePathSubmitEvent = path.join("queries/event/submitEvent.sql");
         return await executeQuery(filePathSubmitEvent, values);

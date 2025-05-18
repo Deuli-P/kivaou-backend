@@ -1,6 +1,6 @@
 import { OrganizationModel } from '../models/OrganizationModel.js';
 import { regexEmail } from '../utils/utils.js';
-
+import jwt from 'jsonwebtoken';
 
 export const createOrganization = async (req, res) => {
     try{
@@ -21,6 +21,20 @@ export const createOrganization = async (req, res) => {
             });
         }
         const result = resultCreateOrganization.rows[0].create_organization;
+        
+
+        req.user.organization_id = result.organization.id;
+        req.user.organization_role = "OWNER";
+
+        const token = jwt.sign({
+            id: req.user.id,
+            user_type: req.user.user_type,
+            organization_id: req.user.organization_id,
+            organization_role: req.user.organization_role
+        }, process.env.JWT_SECRET, { expiresIn: "24h" });
+  
+      req.session.token = token;
+
 
         return res.status(result.status).json(result);
 
@@ -35,6 +49,7 @@ export const getOrganization = async (req, res) => {
     try{
         const user = req.user;
         const { id } = req.params;
+        console.log("start getOrganization", id);
 
         const resultGetOrganizations = await OrganizationModel.getOrganization([id, user.id]);
 
@@ -103,9 +118,7 @@ export const removeUserFromOrganization = async (req, res) => {
             return res.status(400).json({message: 'Erreur lors de la récupération de l\'utilisateur'});
         };
 
-        const organization_id = req.user.organization_id;
-
-        const resultRemoveUserFromOrganization = await OrganizationModel.removeUserFromOrganization([userId, organization_id, user.id]);
+        const resultRemoveUserFromOrganization = await OrganizationModel.removeUserFromOrganization([userId, user.id]);
 
         if (resultRemoveUserFromOrganization.rowCount === 0) {
             return res.status(500).json({
