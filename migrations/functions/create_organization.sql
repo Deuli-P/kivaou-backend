@@ -13,13 +13,13 @@ AS $$
 DECLARE 
     _organization_id UUID;
     _address_id UUID;
-    _org_record RECORD;
+    _org_record JSONB;
 BEGIN
     -- Vérifier si l'organisation existe déjà
     IF EXISTS (SELECT 1 FROM organizations WHERE name = _name) THEN
         RETURN jsonb_build_object(
             'status',400,
-            'message','Vous ne pouvez faire cela'
+            'message','Ce nom est déjà utilisé'
         );
     END IF;
 
@@ -75,31 +75,35 @@ BEGIN
     WHERE id = _owner_id;
 
     -- Récupérer toutes les infos orga + adresse
-    SELECT 
-        o.id,
-        o.name,
-        o.owner_id,
-        jsonb_build_object(
-            'id', a.id,
-            'street', a.street,
-            'street_number', a.street_number,
-            'city', a.city,
-            'postale_code', a.postale_code,
-            'country', a.country,
-            'longitude', a.longitude,
-            'latitude', a.latitude
-        ) AS address
+    SELECT jsonb_build_object(
+            'id', o.id,
+            'name', o.name,
+            'owner', jsonb_build_object(
+                'id', o.owner_id
+            ),
+            'role', 'OWNER',
+            'address', jsonb_build_object(
+                'id', a.id,
+                'street', a.street,
+                'street_number', a.street_number,
+                'city', a.city,
+                'postale_code', a.postale_code,
+                'country', a.country,
+                'longitude', a.longitude,
+                'latitude', a.latitude
+            )
+    )
     INTO _org_record
     FROM organizations o
     JOIN address a ON a.id = o.address_id
     WHERE o.id = _organization_id;
 
-    -- Retourner l'objet JSON complet
     RETURN jsonb_build_object(
         'status', 200,
-        'message','Organisation créée avec success',
-        'organization',_org_record
+        'message', 'Organisation créée avec succès',
+        'organization', _org_record  
     );
+
 
 END;
 $$;

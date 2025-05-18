@@ -66,7 +66,10 @@ BEGIN
 
     -- 8. Soft delete de l'organisation
     UPDATE organizations
-    SET deleted_at = NOW()
+    SET deleted_at = NOW(),
+        owner_id = NULL,
+        deleted_by = _user_id
+    
     WHERE id = _organization_id;
 
     RETURN jsonb_build_object(

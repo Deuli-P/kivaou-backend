@@ -1,5 +1,5 @@
 CREATE OR REPLACE FUNCTION create_address(
-    _number INTEGER,
+    _number TEXT,
     _street TEXT,
     _postal_code INTEGER,
     _city TEXT,

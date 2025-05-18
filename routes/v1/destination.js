@@ -4,9 +4,8 @@ import { getDestinations, createDestination } from '../../controllers/destinatio
 const destinationRouter = Router();
 
 
-destinationRouter.get('/all',  isMember, getDestinations );
+destinationRouter.get('/all/:id',  isMember, getDestinations );
 destinationRouter.post('/create', isOwner, createDestination);
-//destinationRouter.delete('/delete',isConnected, isOwner, deleteEvent);
 
 
 

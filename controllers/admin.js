@@ -1,7 +1,4 @@
 import { AdministrationModel } from "../models/AdministrationModel.js";
-import { EventModel } from "../models/EventModel.js";
-import { OrganizationModel } from "../models/OrganizationModel.js";
-import { UserModel } from "../models/UserModel.js";
 
 
 
@@ -50,7 +47,7 @@ export const deleteEvent = async (req, res) => {
             });
         };
 
-        const resultDeleteEvent = await EventModel.deleteEvent([event_id, user_id]);
+        const resultDeleteEvent = await AdministrationModel.deleteEvent([event_id, user_id]);
 
         if(resultDeleteEvent.rowCount === 0){
             return res.status(400).json({
@@ -85,7 +82,7 @@ export const deleteOrganization = async (req, res) => {
             });
         };
 
-        const resultDeleteOrganization = await OrganizationModel.deleteOrganization([organization_id, user_id]);
+        const resultDeleteOrganization = await AdministrationModel.deleteOrganization([organization_id, user_id]);
 
         if(resultDeleteOrganization.rowCount === 0){
             return res.status(400).json({
@@ -110,6 +107,29 @@ export const deleteOrganization = async (req, res) => {
 export const deleteUser = async (req, res) => {
     try{
 
+        const admin_id = req.user.id;
+        const user_id = req.params.userId;
+
+        if(!user_id){
+            return res.status(400).json({
+                status : 400,
+                message: "Erreur lors de la suppression de l'utilisateur"
+            });
+        };
+
+        const resultDeleteUser = await AdministrationModel.deleteUser([user_id, admin_id]);
+
+        if(resultDeleteUser.rowCount === 0){
+            return res.status(400).json({
+                status: 400,
+                message: "Erreur lors de la suppression de l'utilisateur"
+            });
+        }
+
+        const result = resultDeleteUser.rows[0].delete_user;
+
+        return res.status(result.status).json(result);
+        
     }
     catch(e){
         console.error(e);

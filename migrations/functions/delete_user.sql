@@ -45,7 +45,7 @@ BEGIN
         SELECT id INTO _new_owner_id
         FROM users
         WHERE organization_id = _organization_id
-          AND id <> _user_id
+          AND id != _user_id
           AND deleted_at IS NULL
         ORDER BY RANDOM()
         LIMIT 1;
@@ -88,7 +88,7 @@ BEGIN
     FROM events
     WHERE created_by = _user_id;
 
-    -- 5. Si l'utilisateur a créé des events alors on les supprimesavec les participations
+    -- 5. Si l'utilisateur a créé des events alors on les supprimes avec les participations
     IF _event_user_ids IS NOT NULL AND cardinality(_event_user_ids) > 0 THEN
 
         DELETE FROM submits
@@ -99,15 +99,17 @@ BEGIN
         WHERE id = ANY(_event_user_ids);
     END IF;
 
-    -- 6. Supprimer son auth
+ -- 6. Update l'utilisateur pour le marquer comme supprimé
+    UPDATE users
+    SET deleted_at = NOW(),
+        deleted_by = _admin_id,
+        auth_id = NULL
+    WHERE id = _user_id;
+
+    -- 7. Supprimer son auth
     SELECT auth_id INTO _auth_id FROM users WHERE id = _user_id;
     DELETE FROM auth WHERE id = _auth_id;
 
-    -- 7. Soft delete de l'utilisateur
-    UPDATE users
-    SET deleted_at = NOW(),
-        deleted_by = _admin_id
-    WHERE id = _user_id;
 
     RETURN jsonb_build_object(
         'status', 200,

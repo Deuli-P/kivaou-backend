@@ -37,17 +37,37 @@ BEGIN
             'id', o.id,
             'name', o.name,
             'owner',jsonb_build_object(
-                'id', u.id,
-                'firstname', u.firstname,
-                'lastname', u.lastname,
-                'photo_path', u.photo_path
+                'id', owner.id,
+                'firstname', owner.firstname,
+                'lastname', owner.lastname,
+                'photo_path', owner.photo_path
+            ),
+            'address', jsonb_build_object(
+                'id', a.id,
+                'number', a.street_number,
+                'street', a.street,
+                'postale_code', a.postale_code,
+                'city', a.city,
+                'country', a.country
+            ),
+            'users', (
+                SELECT jsonb_agg(
+                    jsonb_build_object(
+                        'id', u.id,
+                        'firstname', u.firstname,
+                        'lastname', u.lastname,
+                        'photo_path', u.photo_path
+                    )
+                )
+                FROM users u
+                WHERE u.organization_id = o.id AND u.deleted_at IS NULL
             )
         )
     ) INTO _organizations
     FROM organizations o
-    LEFT JOIN users u ON u.id = o.owner_id
+    LEFT JOIN address a ON a.id = o.address_id
+    LEFT JOIN users owner ON owner.id = o.owner_id
     WHERE o.deleted_at IS NULL;
-
     -- -- Tous les événements
     SELECT jsonb_agg(e.event) INTO _events
     FROM (

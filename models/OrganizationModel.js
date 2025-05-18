@@ -26,10 +26,6 @@ export class OrganizationModel {
     return await executeQuery(filePathGetOrganizations, values);
   }
 
-  static async deleteOrganization(values) {
-    const filePathDeleteOrganization = path.join("queries/organization/deleteOrganization.sql");
-    return await executeQuery(filePathDeleteOrganization, values);
-  }
 
   static async addUserToOrganization(values) {
     const filePathAddUserToOrganization = path.join("queries/organization/addUserToOrganization.sql");

@@ -211,7 +211,6 @@ export const getEventById = async (req, res) => {
             });
         }
         const result = resultGetEvent.rows[0].get_event_by_id;
-        console.log('result getEventById', result);
         res.status(result.status).json(result);
 
     }
