@@ -12,7 +12,7 @@ export const createOrganization = async (req, res) => {
             return res.status(400).json({message: 'Veuillez remplir tous les champs'});
         };
 
-        const resultCreateOrganization = await OrganizationModel.createOrganization([name.trim(), number, street.trim(), postale_code, city.trim(), country.trim(), user.id]);
+        const resultCreateOrganization = await OrganizationModel.createOrganization([name.trim(), String(number), street.trim(), postale_code, city.trim(), country.trim(), user.id]);
 
         if(resultCreateOrganization.rowCount === 0){
             return res.status(400).json({
