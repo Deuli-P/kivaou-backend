@@ -1,6 +1,6 @@
 CREATE OR REPLACE FUNCTION create_organization(
     _name TEXT,
-    _number INTEGER,
+    _number TEXT,
     _street TEXT,
     _postal_code INTEGER,
     _city TEXT,
