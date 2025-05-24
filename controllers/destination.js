@@ -38,7 +38,6 @@ export const createDestination = async (req, res) => {
 
         const { name, number, street, city, postale_code, schedule, country, service_type, website, service_link, google_map, speciality, phone, photo_path, longitude, latitude } = req.body;
 
-        console.log('type of number', typeof number);
 
         if(!name.trim() || !number.trim() || !street.trim() || !city.trim() || !postale_code || !country.trim() || !phone.trim() || !service_type.trim() || !speciality.trim()){
             return res.status(400).json({message: 'Veuillez remplir tous les champs'});

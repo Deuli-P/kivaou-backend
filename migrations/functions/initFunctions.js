@@ -8,7 +8,6 @@ const initFunctions = async () => {
     console.log("🚀 Initialisation des Functions...");
     try {
         for (const file of sqlFiles) { 
-            console.log('query :', file);
             const filePath = path.join('migrations/functions', file);
             const query = await readFile(filePath, 'utf-8');
             console.log(' query ✅');
