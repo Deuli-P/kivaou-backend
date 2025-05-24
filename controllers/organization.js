@@ -12,6 +12,10 @@ export const createOrganization = async (req, res) => {
             return res.status(400).json({message: 'Veuillez remplir tous les champs'});
         };
 
+        console.log('number type', typeof number);
+        console.log('number type stringer', typeof String(number));
+
+
         const resultCreateOrganization = await OrganizationModel.createOrganization([name.trim(), String(number), street.trim(), postale_code, city.trim(), country.trim(), user.id]);
 
         if(resultCreateOrganization.rowCount === 0){
