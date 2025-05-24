@@ -15,7 +15,7 @@ BEGIN
 
     -- Inserer l'adresse dans la table address
     INSERT INTO address (street, street_number, city, postale_code, country, created_by)
-    VALUES (TRIM(_street), _number,TRIM( _city), _postal_code, TRIM(_country), _user_id)
+    VALUES (TRIM(_street), TRIM(_number),TRIM( _city), _postal_code, TRIM(_country), _user_id)
     RETURNING id INTO _address_id;
 
     RETURN _address_id;

@@ -7,16 +7,14 @@ export const createOrganization = async (req, res) => {
 
         const user = req.user;
 
-        const { name , number, street, city, postale_code, country } = req.body;
-        if(!name.trim() || !number || !street.trim() || !city.trim() || !postale_code || !country.trim()){
+        const { name , number_street, street, city, postale_code, country } = req.body;
+        if(!name.trim() || !number_street.trim() || !street.trim() || !city.trim() || !postale_code || !country.trim()){
             return res.status(400).json({message: 'Veuillez remplir tous les champs'});
         };
 
-        console.log('number type original : ', typeof number);
-        console.log('number type stringer :', typeof String(number));
 
 
-        const resultCreateOrganization = await OrganizationModel.createOrganization([name.trim(), String(number), street.trim(), parseInt(postale_code), city.trim(), country.trim(), user.id]);
+        const resultCreateOrganization = await OrganizationModel.createOrganization([name.trim(), number_street.trim(), street.trim(), parseInt(postale_code), city.trim(), country.trim(), user.id]);
 
         if(resultCreateOrganization.rowCount === 0){
             return res.status(400).json({
