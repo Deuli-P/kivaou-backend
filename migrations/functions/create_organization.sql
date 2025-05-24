@@ -48,7 +48,7 @@ BEGIN
     );
     END IF;
     -- Inserer l'adresse dans la table address
-    SELECT create_address(_number, _street, _postal_code, _city, _country, _owner_id)
+    SELECT create_address(_number::TEXT, _street, _postal_code, _city, _country, _owner_id)
     INTO _address_id;
 
     IF _address_id IS NULL THEN
